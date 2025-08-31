@@ -6,22 +6,18 @@ export const QuickStartExamples = () => {
 
   const examples = [
     {
-      icon: "💡",
       text: "AI-powered fitness app",
       description: "Personal trainer that adapts to your schedule and preferences"
     },
     {
-      icon: "🌱",
       text: "Sustainable fashion marketplace",
       description: "Platform connecting eco-conscious consumers with sustainable brands"
     },
     {
-      icon: "🚗",
       text: "Car-sharing for neighborhoods",
       description: "Hyperlocal car sharing service for residential communities"
     },
     {
-      icon: "📚",
       text: "Language learning through VR",
       description: "Immersive virtual reality language education platform"
     }
@@ -39,15 +35,14 @@ export const QuickStartExamples = () => {
           <button
             key={index}
             onClick={() => handleExampleClick(example.text)}
-            className="group p-4 rounded-xl border border-border/30 bg-card/20 backdrop-blur-md hover:bg-card/30 hover:border-border/50 transition-all duration-300 text-left"
+            className="group p-6 rounded-xl border border-border/40 bg-card/30 backdrop-blur-xl hover:bg-card/50 hover:border-border/60 transition-all duration-300 text-left shadow-lg"
           >
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-2xl">{example.icon}</span>
-              <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+            <div className="mb-3">
+              <h3 className="text-lg font-semibold italic text-white group-hover:text-primary transition-colors leading-tight">
                 {example.text}
-              </span>
+              </h3>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-foreground/70 leading-relaxed">
               {example.description}
             </p>
           </button>
