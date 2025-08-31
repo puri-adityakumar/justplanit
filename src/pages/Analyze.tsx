@@ -48,9 +48,9 @@ const Analyze = () => {
                 setProgress(overallProgress);
             } else {
                 clearInterval(timer);
-                // Navigate to validation results after analysis is complete
+                // Navigate to dashboard after analysis is complete
                 setTimeout(() => {
-                    navigate(`/validate?idea=${encodeURIComponent(idea)}`);
+                    navigate(`/dashboard?idea=${encodeURIComponent(idea)}`);
                 }, 1000);
             }
         }, 100);
@@ -108,10 +108,10 @@ const Analyze = () => {
                                     <div
                                         key={index}
                                         className={`flex flex-col items-center p-3 rounded-lg transition-all duration-300 ${isCompleted
-                                                ? 'bg-primary/20 text-primary'
-                                                : isCurrent
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'bg-background/10 text-foreground/40'
+                                            ? 'bg-primary/20 text-primary'
+                                            : isCurrent
+                                                ? 'bg-primary/10 text-primary'
+                                                : 'bg-background/10 text-foreground/40'
                                             }`}
                                     >
                                         <StepIcon className={`h-6 w-6 mb-2 ${isCurrent ? 'animate-pulse' : ''}`} />

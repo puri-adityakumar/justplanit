@@ -25,3 +25,9 @@ dist-ssr
 
 
 plans.md
+
+
+.env
+.env*.local
+!.env.example
+
