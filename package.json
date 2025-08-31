@@ -1,7 +1,31 @@
 {
-  "name": "vite_react_shadcn_ts",
-  "private": true,
-  "version": "0.0.0",
+  "name": "justplanit",
+  "description": "AI-powered startup idea validation platform with comprehensive analysis and actionable insights",
+  "version": "2.0.0",
+  "author": "Aditya Kumar Puri <puri.adityakumar@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/puri-adityakumar/justplanit#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/puri-adityakumar/justplanit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/puri-adityakumar/justplanit/issues"
+  },
+  "keywords": [
+    "startup",
+    "validation",
+    "ai",
+    "entrepreneurship",
+    "business-analysis",
+    "market-research",
+    "react",
+    "typescript",
+    "vite",
+    "tailwindcss",
+    "framer-motion"
+  ],
+  "private": false,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -46,7 +70,9 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.12",
+    "html2canvas": "^1.4.1",
     "input-otp": "^1.4.2",
+    "jspdf": "^2.5.2",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
@@ -68,6 +94,7 @@
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
+    "@types/jspdf": "^2.3.0",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
