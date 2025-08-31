@@ -24,7 +24,7 @@ export const QuickStartExamples = () => {
   ];
 
   const handleExampleClick = (text: string) => {
-    navigate(`/analyze?idea=${encodeURIComponent(text)}`);
+    navigate(`/dashboard?idea=${encodeURIComponent(text)}`);
   };
 
   return (

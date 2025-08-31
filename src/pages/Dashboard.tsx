@@ -18,11 +18,11 @@ import {
     ArrowLeft,
     Download,
     Share2,
-    Loader2,
     Brain,
     Code,
     MapPin,
-    FileText
+    FileText,
+    Search
 } from "lucide-react";
 import { ValidationResult, DashboardSection } from "@/types/validation";
 import { openRouterService } from "@/services/openrouter";
@@ -34,6 +34,8 @@ const Dashboard = () => {
     const [validationData, setValidationData] = useState<ValidationResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [currentStep, setCurrentStep] = useState(0);
+    const [progress, setProgress] = useState(0);
 
     // Dashboard sections configuration
     const dashboardSections: DashboardSection[] = [
@@ -114,23 +116,67 @@ const Dashboard = () => {
         }
     }, [idea]);
 
+    // Analysis steps for the loading animation
+    const analysisSteps = [
+        { icon: Search, text: "Analyzing market trends...", duration: 2000 },
+        { icon: Globe, text: "Conducting web research...", duration: 2500 },
+        { icon: Users, text: "Evaluating target audience...", duration: 2000 },
+        { icon: TrendingUp, text: "Assessing competition...", duration: 2200 },
+        { icon: Brain, text: "Generating expert insights...", duration: 1800 },
+    ];
+
     const analyzeIdea = async () => {
         setLoading(true);
         setError(null);
+        setCurrentStep(0);
+        setProgress(0);
+
+        // Start the progress animation
+        const totalDuration = analysisSteps.reduce((sum, step) => sum + step.duration, 0);
+        let elapsed = 0;
+        let stepIndex = 0;
+
+        const progressTimer = setInterval(() => {
+            if (stepIndex < analysisSteps.length) {
+                const stepDuration = analysisSteps[stepIndex].duration;
+                const stepProgress = Math.min(100, (elapsed / stepDuration) * 100);
+
+                if (elapsed >= stepDuration) {
+                    setCurrentStep(prev => prev + 1);
+                    stepIndex++;
+                    elapsed = 0;
+                } else {
+                    elapsed += 100;
+                }
+
+                // Calculate overall progress
+                const completedSteps = stepIndex;
+                const currentStepProgress = stepProgress / 100;
+                const overallProgress = ((completedSteps + currentStepProgress) / analysisSteps.length) * 100;
+                setProgress(overallProgress);
+            } else {
+                clearInterval(progressTimer);
+            }
+        }, 100);
 
         try {
             console.log('Making API call to analyze idea:', idea);
 
             const response = await openRouterService.analyzeIdea({ idea });
 
+            // Clear the progress timer
+            clearInterval(progressTimer);
+
             if (response.success && response.data) {
                 console.log('API call successful, received data');
                 setValidationData(response.data);
+                setProgress(100);
             } else {
                 console.error('API call failed:', response.error);
                 setError(response.error || 'Failed to analyze idea');
             }
         } catch (err) {
+            clearInterval(progressTimer);
             console.error('Error in analyzeIdea:', err);
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
         } finally {
@@ -168,13 +214,40 @@ const Dashboard = () => {
     };
 
     if (loading) {
+        const CurrentIcon = currentStep < analysisSteps.length ? analysisSteps[currentStep].icon : Brain;
+        const currentText = currentStep < analysisSteps.length ? analysisSteps[currentStep].text : "Analysis complete!";
+
         return (
-            <div className="min-h-screen bg-black relative flex items-center justify-center">
+            <div className="min-h-screen bg-black relative">
                 <GradientBars bars={25} colors={['#ef4444', 'transparent']} />
-                <div className="relative z-10 text-center">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-white mb-2">Analyzing Your Idea</h2>
-                    <p className="text-foreground/60">This may take a few moments...</p>
+
+                <Navigation />
+
+                <div className="relative z-10 flex flex-col items-center justify-center px-6 py-16 min-h-[80vh]">
+                    <div className="text-center max-w-2xl">
+                        <h1 className="text-4xl md:text-6xl font-instrument font-bold text-foreground mb-8 leading-tight">
+                            <span className="text-white">Analyzing Your Idea</span>
+                        </h1>
+
+                        <div className="bg-card/20 backdrop-blur-md border border-border/30 rounded-lg p-6 mb-8">
+                            <p className="text-lg text-foreground/80 mb-6 italic text-center">
+                                "{idea}"
+                            </p>
+
+                            {/* Current Analysis Step */}
+                            <div className="flex items-center justify-center gap-4 mb-4">
+                                <CurrentIcon className="h-8 w-8 text-primary animate-spin" />
+                                <span className="text-xl font-medium text-foreground text-center">
+                                    {currentText}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-2 text-foreground/60">
+                            <Globe className="h-5 w-5 animate-spin" />
+                            <span className="text-sm">This may take a few moments...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         );

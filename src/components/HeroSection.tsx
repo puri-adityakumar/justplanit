@@ -15,8 +15,8 @@ export const HeroSection = ({ onSendMessage }: HeroSectionProps) => {
     if (!message.trim()) return;
 
     setIsLoading(true);
-    // Navigate to analyze page with the idea
-    navigate(`/analyze?idea=${encodeURIComponent(message.trim())}`);
+    // Navigate directly to dashboard with the idea
+    navigate(`/dashboard?idea=${encodeURIComponent(message.trim())}`);
   };
 
   return (

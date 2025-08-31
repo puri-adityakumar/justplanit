@@ -38,7 +38,7 @@ export class OpenRouterService {
             const prompt = generateValidationPrompt(request.idea, request.user_context);
 
             const requestBody = {
-                model: 'deepseek/deepseek-r1', // Using DeepSeek model
+                model: 'deepseek/deepseek-chat-v3.1:free', // Using DeepSeek model
                 messages: [
                     {
                         role: 'system',
@@ -146,7 +146,7 @@ export class OpenRouterService {
                 method: 'POST',
                 headers: openRouterConfig.headers,
                 body: JSON.stringify({
-                    model: 'deepseek/deepseek-r1:online', // Online model with web search
+                    model: 'deepseek/deepseek-chat-v3.1:free', // Online model with web search
                     messages: [
                         {
                             role: 'user',
