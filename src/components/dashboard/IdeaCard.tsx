@@ -11,11 +11,11 @@ import {
   MoreHorizontal,
   Loader
 } from "lucide-react";
-import { ValidatedIdea } from "@/data/dummyIdeas";
+import { IdeaDocument } from "@/types/database";
 import { Link } from "react-router-dom";
 
 interface IdeaCardProps {
-  idea: ValidatedIdea;
+  idea: IdeaDocument;
 }
 
 export const IdeaCard = ({ idea }: IdeaCardProps) => {
@@ -48,12 +48,12 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
     return "text-red-400";
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
-    }).format(date);
+    }).format(new Date(dateString));
   };
 
   return (
@@ -61,10 +61,10 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2">
           {getStatusIcon()}
-          <h3 className="text-lg font-semibold text-white truncate">{idea.title}</h3>
+          <h3 className="text-lg font-semibold text-white truncate">{idea.title || 'Untitled Idea'}</h3>
         </div>
         <div className="flex items-center gap-2">
-          {idea.isPublic && (
+          {idea.is_public && (
             <Eye className="h-4 w-4 text-foreground/40" />
           )}
           <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -74,13 +74,13 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
       </div>
 
       <p className="text-foreground/70 text-sm mb-4 line-clamp-2 leading-relaxed">
-        {idea.description}
+        {idea.description || 'No description provided'}
       </p>
 
       <div className="flex items-center justify-between mb-4">
         {getStatusBadge()}
         <span className="text-xs text-foreground/50">
-          {formatDate(idea.createdAt)}
+          {formatDate(idea.created_at)}
         </span>
       </div>
 
@@ -90,8 +90,8 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
             <TrendingUp className="h-4 w-4 text-primary" />
             <div>
               <div className="text-xs text-foreground/60">Viability</div>
-              <div className={`text-sm font-semibold ${getViabilityColor(idea.viabilityScore)}`}>
-                {idea.viabilityScore ? `${idea.viabilityScore}/10` : 'N/A'}
+              <div className="text-sm font-semibold text-foreground/60">
+                Analysis needed
               </div>
             </div>
           </div>
@@ -99,8 +99,8 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
             <DollarSign className="h-4 w-4 text-primary" />
             <div>
               <div className="text-xs text-foreground/60">Market Size</div>
-              <div className="text-sm font-semibold text-primary">
-                {idea.marketSize || 'N/A'}
+              <div className="text-sm font-semibold text-foreground/60">
+                Analysis needed
               </div>
             </div>
           </div>
@@ -127,7 +127,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
 
       <div className="flex gap-2">
         {idea.status === 'completed' && (
-          <Link to={`/dashboard/${idea.slug}`} className="flex-1">
+          <Link to={`/idea/${idea.$id}`} className="flex-1">
             <Button className="w-full bg-primary hover:bg-primary/90">
               View Analysis
             </Button>
@@ -135,7 +135,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
         )}
         
         {idea.status === 'analyzing' && (
-          <Link to={`/dashboard/${idea.slug}`} className="flex-1">
+          <Link to={`/idea/${idea.$id}`} className="flex-1">
             <Button variant="outline" className="w-full border-border/40">
               View Progress
             </Button>

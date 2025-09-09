@@ -11,6 +11,7 @@ import Validate from "./pages/Validate";
 import Dashboard from "./pages/Dashboard";
 import MainDashboard from "./pages/MainDashboard";
 import IdeaAnalysis from "./pages/IdeaAnalysis";
+import IdeaDetail from "./pages/IdeaDetail";
 import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/NotFound";
 
@@ -33,21 +34,27 @@ const App = () => (
               </ProtectedRoute>
             } />
             {/* Main dashboard - shows all ideas */}
-            <Route path="/dashboard" element={
+            <Route path="/main-dashboard" element={
               <ProtectedRoute>
                 <MainDashboard />
               </ProtectedRoute>
             } />
-            {/* Individual idea analysis pages */}
+            {/* Individual idea detail pages */}
+            <Route path="/idea/:ideaId" element={
+              <ProtectedRoute>
+                <IdeaDetail />
+              </ProtectedRoute>
+            } />
+            {/* New idea validation flow */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            {/* Legacy individual idea analysis pages */}
             <Route path="/dashboard/:slug" element={
               <ProtectedRoute>
                 <IdeaAnalysis />
-              </ProtectedRoute>
-            } />
-            {/* Legacy route - redirects old dashboard behavior to new individual idea pages */}
-            <Route path="/dashboard-old" element={
-              <ProtectedRoute>
-                <Dashboard />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

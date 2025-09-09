@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NameCollectionModal } from "@/components/ui/name-collection-modal";
 import { useAuth } from "@/hooks/use-auth";
+import { useIdeas } from "@/hooks/use-ideas";
 import {
     TrendingUp,
     Users,
@@ -34,6 +35,7 @@ const Dashboard = () => {
     const [searchParams] = useSearchParams();
     const idea = searchParams.get('idea') || 'Your startup idea';
     const { user, updateUserName } = useAuth();
+    const { createIdea, updateIdea } = useIdeas();
 
     const [validationData, setValidationData] = useState<ValidationResult | null>(null);
     const [loading, setLoading] = useState(true);
@@ -42,6 +44,7 @@ const Dashboard = () => {
     const [progress, setProgress] = useState(0);
     const [showNameModal, setShowNameModal] = useState(false);
     const [isUpdatingName, setIsUpdatingName] = useState(false);
+    const [currentIdeaId, setCurrentIdeaId] = useState<string | null>(null);
 
     // Helper function to check if user needs to complete profile
     const isUserNameMissing = (user: Models.User<Models.Preferences> | null) => {
@@ -179,35 +182,42 @@ const Dashboard = () => {
         setCurrentStep(0);
         setProgress(0);
 
-        // Start the progress animation
-        const totalDuration = analysisSteps.reduce((sum, step) => sum + step.duration, 0);
-        let elapsed = 0;
-        let stepIndex = 0;
-
-        const progressTimer = setInterval(() => {
-            if (stepIndex < analysisSteps.length) {
-                const stepDuration = analysisSteps[stepIndex].duration;
-                const stepProgress = Math.min(100, (elapsed / stepDuration) * 100);
-
-                if (elapsed >= stepDuration) {
-                    setCurrentStep(prev => prev + 1);
-                    stepIndex++;
-                    elapsed = 0;
-                } else {
-                    elapsed += 100;
-                }
-
-                // Calculate overall progress
-                const completedSteps = stepIndex;
-                const currentStepProgress = stepProgress / 100;
-                const overallProgress = ((completedSteps + currentStepProgress) / analysisSteps.length) * 100;
-                setProgress(overallProgress);
-            } else {
-                clearInterval(progressTimer);
-            }
-        }, 100);
-
         try {
+            // Step 1: Create idea record in database
+            const newIdea = await createIdea({
+                title: idea.length > 50 ? idea.substring(0, 50) + "..." : idea,
+                description: idea
+            });
+            setCurrentIdeaId(newIdea.$id);
+
+            // Start the progress animation
+            const totalDuration = analysisSteps.reduce((sum, step) => sum + step.duration, 0);
+            let elapsed = 0;
+            let stepIndex = 0;
+
+            const progressTimer = setInterval(() => {
+                if (stepIndex < analysisSteps.length) {
+                    const stepDuration = analysisSteps[stepIndex].duration;
+                    const stepProgress = Math.min(100, (elapsed / stepDuration) * 100);
+
+                    if (elapsed >= stepDuration) {
+                        setCurrentStep(prev => prev + 1);
+                        stepIndex++;
+                        elapsed = 0;
+                    } else {
+                        elapsed += 100;
+                    }
+
+                    // Calculate overall progress
+                    const completedSteps = stepIndex;
+                    const currentStepProgress = stepProgress / 100;
+                    const overallProgress = ((completedSteps + currentStepProgress) / analysisSteps.length) * 100;
+                    setProgress(overallProgress);
+                } else {
+                    clearInterval(progressTimer);
+                }
+            }, 100);
+
             console.log('Making API call to analyze idea:', idea);
 
             const response = await openRouterService.analyzeIdea({ idea });
@@ -219,13 +229,32 @@ const Dashboard = () => {
                 console.log('API call successful, received data');
                 setValidationData(response.data);
                 setProgress(100);
+
+                // Step 2: Update idea status to completed
+                await updateIdea(newIdea.$id, { 
+                    status: 'completed'
+                });
+
+                // Step 3: Save analysis data to database
+                // Note: In a real implementation, you would also save the sections data
+                // For now, we'll just store the validation result in memory
+                
             } else {
                 console.error('API call failed:', response.error);
+                await updateIdea(newIdea.$id, { 
+                    status: 'failed'
+                });
                 setError(response.error || 'Failed to analyze idea');
             }
         } catch (err) {
-            clearInterval(progressTimer);
             console.error('Error in analyzeIdea:', err);
+            if (currentIdeaId) {
+                try {
+                    await updateIdea(currentIdeaId, { status: 'failed' });
+                } catch (updateErr) {
+                    console.error('Failed to update idea status:', updateErr);
+                }
+            }
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
         } finally {
             setLoading(false);

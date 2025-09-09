@@ -8,12 +8,13 @@ import { IdeaPromptSection } from "@/components/dashboard/IdeaPromptSection";
 import { IdeasGrid } from "@/components/dashboard/IdeasGrid";
 import { DashboardQuickActions } from "@/components/dashboard/DashboardQuickActions";
 import { useAuth } from "@/hooks/use-auth";
-import { dummyValidatedIdeas, generateSlug, type ValidatedIdea } from "@/data/dummyIdeas";
+import { useIdeas } from "@/hooks/use-ideas";
+import { IdeaDocument } from "@/types/database";
 
 const MainDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [ideas, setIdeas] = useState<ValidatedIdea[]>(dummyValidatedIdeas);
+  const { ideas, loading, error } = useIdeas();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<'all' | 'completed' | 'analyzing' | 'failed'>('all');
 
@@ -24,24 +25,18 @@ const MainDashboard = () => {
   }, []);
 
   const handleIdeaSubmit = (idea: string) => {
-    // Generate slug and navigate to idea analysis page
-    const slug = generateSlug(idea);
-    
-    // In real implementation, this would create a database entry
-    // For now, we'll just navigate to the slug page
-    navigate(`/dashboard/${slug}?idea=${encodeURIComponent(idea)}`);
+    // Navigate to dashboard with the idea parameter
+    navigate(`/dashboard?idea=${encodeURIComponent(idea)}`);
   };
 
   const getStatsData = () => {
     const completed = ideas.filter(i => i.status === 'completed').length;
     const analyzing = ideas.filter(i => i.status === 'analyzing').length;
-    const avgViability = ideas
-      .filter(i => i.viabilityScore)
-      .reduce((sum, i) => sum + (i.viabilityScore || 0), 0) / 
-      ideas.filter(i => i.viabilityScore).length || 0;
-    const publicIdeas = ideas.filter(i => i.isPublic).length;
+    const failed = ideas.filter(i => i.status === 'failed').length;
+    const avgViability = 0; // Will need to calculate from analysis data
+    const publicIdeas = ideas.filter(i => i.is_public).length;
 
-    return { completed, analyzing, avgViability, publicIdeas };
+    return { completed, analyzing, failed, avgViability, publicIdeas };
   };
 
   const stats = getStatsData();

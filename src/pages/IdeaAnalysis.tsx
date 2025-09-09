@@ -34,8 +34,10 @@ import {
   GitBranch,
   Map
 } from "lucide-react";
-import { getIdeaBySlug, type ValidatedIdea } from "@/data/dummyIdeas";
 import { ValidationResult } from "@/types/validation";
+import { useIdeaBySlug } from "@/hooks/use-ideas";
+import { useAuth } from "@/hooks/use-auth";
+import type { CompleteIdea } from "@/types/database";
 import { openRouterService } from "@/services/openrouter";
 
 // Analysis steps for the loading animation
@@ -52,11 +54,9 @@ const IdeaAnalysis = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const idea = searchParams.get('idea');
+  const { user } = useAuth();
 
-  const [ideaData, setIdeaData] = useState<ValidatedIdea | null>(null);
-  const [validationData, setValidationData] = useState<ValidationResult | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { idea: ideaData, loading, error, updateAnalysis, createIdeaWithSlug } = useIdeaBySlug(slug || '');
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
@@ -65,92 +65,52 @@ const IdeaAnalysis = () => {
   }, []);
 
   const analyzeIdea = useCallback(async (ideaText: string) => {
-    setLoading(true);
-    setError(null);
     setCurrentStep(0);
 
     try {
       const response = await openRouterService.analyzeIdea({ idea: ideaText });
 
       if (response.success && response.data) {
-        setValidationData(response.data);
-        
-        if (ideaData) {
-          setIdeaData({
-            ...ideaData,
-            status: 'completed',
-            validationData: response.data,
-            viabilityScore: response.data.executive_summary.viability_score,
-            marketSize: response.data.executive_summary.market_opportunity,
-            updatedAt: new Date()
-          });
-        }
+        await updateAnalysis({
+          status: 'completed',
+          result: response.data as unknown as Record<string, unknown>,
+          completed_at: new Date().toISOString()
+        });
       } else {
-        setError(response.error || 'Failed to analyze idea');
-        
-        if (ideaData) {
-          setIdeaData({
-            ...ideaData,
-            status: 'failed',
-            updatedAt: new Date()
-          });
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-      
-      if (ideaData) {
-        setIdeaData({
-          ...ideaData,
+        await updateAnalysis({
           status: 'failed',
-          updatedAt: new Date()
+          error: response.error || 'Failed to analyze idea'
         });
       }
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      await updateAnalysis({
+        status: 'failed',
+        error: errorMessage
+      });
     }
-  }, [ideaData]);
+  }, [updateAnalysis]);
 
   useEffect(() => {
-    if (slug) {
-      const existingIdea = getIdeaBySlug(slug);
-      
-      if (existingIdea) {
-        setIdeaData(existingIdea);
-        if (existingIdea.status === 'completed' && existingIdea.validationData) {
-          setValidationData(existingIdea.validationData);
-          setLoading(false);
-        } else if (existingIdea.status === 'analyzing' || existingIdea.status === 'failed') {
-          if (idea) {
-            analyzeIdea(idea);
-          } else {
-            setLoading(false);
-          }
-        }
-      } else {
-        if (idea) {
-          const newIdea: ValidatedIdea = {
-            id: Date.now().toString(),
-            slug: slug,
-            title: idea.length > 50 ? idea.substring(0, 50) + '...' : idea,
-            description: idea,
-            status: 'analyzing',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isPublic: false
-          };
-          setIdeaData(newIdea);
+    if (ideaData && ideaData.analysis?.status === 'analyzing' && idea) {
+      analyzeIdea(idea);
+    } else if (!ideaData && slug && idea && user) {
+      // Create new idea if needed
+      const title = idea.length > 50 ? idea.substring(0, 50) + '...' : idea;
+      createIdeaWithSlug(title, idea, user.$id, user.name || user.email)
+        .then(() => {
+          // Once idea is created, start analysis
           analyzeIdea(idea);
-        } else {
-          navigate('/dashboard');
-        }
-      }
+        })
+        .catch(err => {
+          console.error('Failed to create idea:', err);
+        });
     }
-  }, [slug, idea, navigate, analyzeIdea]);
+  }, [ideaData, slug, idea, user, analyzeIdea, createIdeaWithSlug]);
 
   useEffect(() => {
-    if (ideaData) {
-      document.title = `${ideaData.title} • Just Plan It!`;
+    if (ideaData?.idea.title) {
+      document.title = `${ideaData.idea.title} • Just Plan It!`;
     }
   }, [ideaData]);
 
@@ -176,10 +136,10 @@ const IdeaAnalysis = () => {
     );
   }
 
-  if (loading || ideaData.status === 'analyzing') {
+  if (loading || ideaData?.analysis?.status === 'analyzing') {
     return (
       <AnalysisLoading 
-        ideaDescription={ideaData.description}
+        ideaDescription={ideaData?.idea.description || idea || ''}
         currentStep={currentStep}
         progress={(currentStep / analysisSteps.length) * 100}
         analysisSteps={analysisSteps}
@@ -187,16 +147,17 @@ const IdeaAnalysis = () => {
     );
   }
 
-  if (error || ideaData.status === 'failed') {
+  if (error || ideaData?.analysis?.status === 'failed') {
     return (
       <AnalysisError 
-        error={error}
-        onRetry={() => analyzeIdea(ideaData.description)}
+        error={error || ideaData?.analysis?.error}
+        onRetry={() => ideaData && analyzeIdea(ideaData.idea.description || '')}
       />
     );
   }
 
-  if (!validationData) {
+  const validationData = ideaData?.analysis?.result as unknown as ValidationResult | undefined;
+  if (!validationData || !ideaData) {
     return null;
   }
 
@@ -208,8 +169,8 @@ const IdeaAnalysis = () => {
       <div className="relative z-10 px-6 py-8">
         <div className="max-w-7xl mx-auto">
           <AnalysisHeader 
-            title={ideaData.title}
-            description={ideaData.description}
+            title={ideaData.idea.title || 'Untitled Idea'}
+            description={ideaData.idea.description || ''}
           />
 
           <AnalysisQuickStats validationData={validationData} />

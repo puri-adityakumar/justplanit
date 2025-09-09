@@ -36,7 +36,7 @@ export const Navigation = () => {
           <>
             <Link to="/about-us" className="text-foreground/70 hover:text-foreground transition-colors font-medium">About</Link>
             {isAuthenticated && (
-              <Link to="/dashboard" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Dashboard</Link>
+              <Link to="/main-dashboard" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Dashboard</Link>
             )}
           </>
         )}

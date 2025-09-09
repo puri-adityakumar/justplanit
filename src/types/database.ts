@@ -16,8 +16,12 @@ export interface IdeaDocument extends Models.Document {
 
 export interface IdeaAnalysisDocument extends Models.Document {
   idea_id: string;
+  status?: 'analyzing' | 'completed' | 'failed';
   viability_score?: number;
   market_size?: string;
+  result?: string; // JSON string of ValidationResult
+  error?: string;
+  completed_at?: string;
   created_at: string;
   updated_at: string;
 }
@@ -43,7 +47,18 @@ export interface IdeaDataSectionDocument extends Models.Document {
 // Complete idea with all related data
 export interface CompleteIdea {
   idea: IdeaDocument;
-  analysis?: IdeaAnalysisDocument;
+  analysis?: {
+    $id: string;
+    idea_id: string;
+    status?: 'analyzing' | 'completed' | 'failed';
+    viability_score?: number;
+    market_size?: string;
+    result?: Record<string, unknown>; // Parsed ValidationResult
+    error?: string;
+    completed_at?: string;
+    created_at: string;
+    updated_at: string;
+  };
   sections: Partial<Record<SectionType, unknown>>; // Parsed JSON data
 }
 
@@ -57,8 +72,12 @@ export interface CreateIdeaRequest {
 
 export interface UpdateIdeaAnalysisRequest {
   idea_id: string;
+  status?: 'analyzing' | 'completed' | 'failed';
   viability_score?: number;
   market_size?: string;
+  result?: Record<string, unknown>; // ValidationResult from OpenRouter
+  error?: string;
+  completed_at?: string;
 }
 
 export interface CreateSectionRequest {
@@ -85,10 +104,10 @@ export interface IdeaDetailResponse {
 
 // Database configuration
 export const DATABASE_CONFIG = {
-  DATABASE_ID: '68c0517a0014c38c2a50',
+  DATABASE_ID: import.meta.env.VITE_APPWRITE_DATABASE_ID || '68c0517a0014c38c2a50',
   COLLECTIONS: {
-    IDEAS: 'ideas',
-    IDEA_ANALYSIS: 'idea_analysis', 
-    IDEA_DATA_SECTIONS: 'idea_data_sections'
+    IDEAS: import.meta.env.VITE_APPWRITE_IDEAS_COLLECTION_ID || 'ideas',
+    IDEA_ANALYSIS: import.meta.env.VITE_APPWRITE_ANALYSIS_COLLECTION_ID || 'idea_analysis', 
+    IDEA_DATA_SECTIONS: import.meta.env.VITE_APPWRITE_SECTIONS_COLLECTION_ID || 'idea_data_sections'
   }
 } as const;

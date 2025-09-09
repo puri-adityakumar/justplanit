@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IdeaCard } from "./IdeaCard";
-import { ValidatedIdea } from "@/data/dummyIdeas";
+import { IdeaDocument } from "@/types/database";
 import {
   Search,
   Filter,
@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 interface IdeasGridProps {
-  ideas: ValidatedIdea[];
+  ideas: IdeaDocument[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   filterStatus: 'all' | 'completed' | 'analyzing' | 'failed';
@@ -25,8 +25,8 @@ export const IdeasGrid = ({
   setFilterStatus 
 }: IdeasGridProps) => {
   const filteredIdeas = ideas.filter(idea => {
-    const matchesSearch = idea.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         idea.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (idea.title?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+                         (idea.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     const matchesFilter = filterStatus === 'all' || idea.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -70,7 +70,7 @@ export const IdeasGrid = ({
       {filteredIdeas.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredIdeas.map((idea) => (
-            <IdeaCard key={idea.id} idea={idea} />
+            <IdeaCard key={idea.$id} idea={idea} />
           ))}
         </div>
       ) : (

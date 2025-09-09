@@ -1,5 +1,5 @@
 import { databases } from '@/lib/appwrite';
-import { ID, Query } from 'appwrite';
+import { ID, Query, Models } from 'appwrite';
 import { 
   DATABASE_CONFIG,
   IdeaDocument, 
@@ -61,20 +61,52 @@ export class IdeaService {
     return response as unknown as IdeaDocument;
   }
 
-  // Get complete idea with analysis and sections
+    // Get idea by slug
+  static async getIdeaBySlug(slug: string): Promise<IdeaDocument | null> {
+    try {
+      const response = await databases.listDocuments(
+        this.db,
+        this.collections.IDEAS,
+        [Query.equal('slug', parseInt(slug))]
+      );
+      
+      return response.documents.length > 0 
+        ? response.documents[0] as unknown as IdeaDocument
+        : null;
+    } catch (err) {
+      console.error('Error fetching idea by slug:', err);
+      return null;
+    }
+  }
+
+  // Get complete idea with all related data
   static async getCompleteIdea(ideaId: string): Promise<CompleteIdea> {
     // Get main idea
     const idea = await this.getIdea(ideaId);
 
     // Get analysis
-    let analysis: IdeaAnalysisDocument | undefined;
+    let analysis: CompleteIdea['analysis'] | undefined;
     try {
       const analysisResponse = await databases.listDocuments(
         this.db,
         this.collections.IDEA_ANALYSIS,
         [Query.equal('idea_id', ideaId)]
       );
-      analysis = analysisResponse.documents[0] as unknown as IdeaAnalysisDocument;
+      if (analysisResponse.documents.length > 0) {
+        const rawAnalysis = analysisResponse.documents[0] as unknown as IdeaAnalysisDocument;
+        analysis = {
+          $id: rawAnalysis.$id,
+          idea_id: rawAnalysis.idea_id,
+          status: rawAnalysis.status,
+          viability_score: rawAnalysis.viability_score,
+          market_size: rawAnalysis.market_size,
+          result: rawAnalysis.result ? JSON.parse(rawAnalysis.result) : undefined,
+          error: rawAnalysis.error,
+          completed_at: rawAnalysis.completed_at,
+          created_at: rawAnalysis.$createdAt,
+          updated_at: rawAnalysis.updated_at
+        };
+      }
     } catch (error) {
       console.log('No analysis found for idea:', ideaId);
     }
@@ -135,7 +167,7 @@ export class IdeaService {
   }
 
   // Create or update analysis
-  static async upsertAnalysis(request: UpdateIdeaAnalysisRequest): Promise<IdeaAnalysisDocument> {
+  static async upsertAnalysis(request: UpdateIdeaAnalysisRequest): Promise<CompleteIdea['analysis']> {
     const now = new Date().toISOString();
 
     // Check if analysis exists
@@ -147,30 +179,49 @@ export class IdeaService {
 
     const analysisData = {
       idea_id: request.idea_id,
+      status: request.status || 'analyzing',
       viability_score: request.viability_score || null,
       market_size: request.market_size || null,
+      result: request.result ? JSON.stringify(request.result) : null,
+      error: request.error || null,
+      completed_at: request.completed_at || null,
       updated_at: now
     };
 
+    let response: Models.Document;
     if (existingResponse.documents.length > 0) {
       // Update existing
-      const response = await databases.updateDocument(
+      response = await databases.updateDocument(
         this.db,
         this.collections.IDEA_ANALYSIS,
         existingResponse.documents[0].$id,
         analysisData
       );
-      return response as unknown as IdeaAnalysisDocument;
     } else {
       // Create new
-      const response = await databases.createDocument(
+      response = await databases.createDocument(
         this.db,
         this.collections.IDEA_ANALYSIS,
         ID.unique(),
-        { ...analysisData, created_at: now }
+        analysisData
       );
-      return response as unknown as IdeaAnalysisDocument;
     }
+
+    const rawAnalysis = response as unknown as IdeaAnalysisDocument;
+    
+    // Return parsed format
+    return {
+      $id: rawAnalysis.$id,
+      idea_id: rawAnalysis.idea_id,
+      status: rawAnalysis.status,
+      viability_score: rawAnalysis.viability_score,
+      market_size: rawAnalysis.market_size,
+      result: rawAnalysis.result ? JSON.parse(rawAnalysis.result) : undefined,
+      error: rawAnalysis.error,
+      completed_at: rawAnalysis.completed_at,
+      created_at: rawAnalysis.$createdAt,
+      updated_at: rawAnalysis.updated_at
+    };
   }
 
   // Create or update section data
