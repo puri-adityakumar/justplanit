@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
 export const QuickStartExamples = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const examples = [
     {
@@ -24,6 +26,12 @@ export const QuickStartExamples = () => {
   ];
 
   const handleExampleClick = (text: string) => {
+    if (!isAuthenticated) {
+      // Store the idea in sessionStorage to use after login
+      sessionStorage.setItem('pendingIdea', text);
+      navigate('/auth');
+      return;
+    }
     navigate(`/dashboard?idea=${encodeURIComponent(text)}`);
   };
 
