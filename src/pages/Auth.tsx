@@ -25,8 +25,7 @@ const Auth = () => {
             // Simple redirect logic - if already authenticated, redirect
             const pendingIdea = sessionStorage.getItem('pendingIdea');
             if (pendingIdea) {
-                sessionStorage.removeItem('pendingIdea');
-                navigate(`/dashboard?idea=${encodeURIComponent(pendingIdea)}`);
+                navigate('/dashboard', { state: { pendingIdea } });
             } else {
                 const from = location.state?.from?.pathname || '/dashboard';
                 navigate(from, { replace: true });
@@ -51,8 +50,7 @@ const Auth = () => {
         // The dashboard will handle name collection if needed
         const pendingIdea = sessionStorage.getItem('pendingIdea');
         if (pendingIdea) {
-            sessionStorage.removeItem('pendingIdea');
-            navigate(`/dashboard?idea=${encodeURIComponent(pendingIdea)}`);
+            navigate('/dashboard', { state: { pendingIdea } });
         } else {
             const from = location.state?.from?.pathname || '/dashboard';
             navigate(from, { replace: true });

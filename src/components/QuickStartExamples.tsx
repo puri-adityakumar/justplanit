@@ -32,7 +32,7 @@ export const QuickStartExamples = () => {
       navigate('/auth');
       return;
     }
-    navigate(`/dashboard?idea=${encodeURIComponent(text)}`);
+    navigate('/dashboard', { state: { pendingIdea: text } });
   };
 
   return (

@@ -24,8 +24,8 @@ export const HeroSection = ({ onSendMessage }: HeroSectionProps) => {
     }
 
     setIsLoading(true);
-    // Navigate directly to dashboard with the idea
-    navigate(`/dashboard?idea=${encodeURIComponent(message.trim())}`);
+    // Navigate to dashboard and let it handle the idea creation
+    navigate('/dashboard', { state: { pendingIdea: message.trim() } });
   };
 
   return (
