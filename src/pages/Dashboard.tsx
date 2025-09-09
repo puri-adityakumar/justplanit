@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { Models } from "appwrite";
 import { GradientBars } from "@/components/ui/bg-bars";
 import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NameCollectionModal } from "@/components/ui/name-collection-modal";
+import { useAuth } from "@/hooks/use-auth";
 import {
     TrendingUp,
     Users,
@@ -30,12 +33,33 @@ import { openRouterService } from "@/services/openrouter";
 const Dashboard = () => {
     const [searchParams] = useSearchParams();
     const idea = searchParams.get('idea') || 'Your startup idea';
+    const { user, updateUserName } = useAuth();
 
     const [validationData, setValidationData] = useState<ValidationResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [progress, setProgress] = useState(0);
+    const [showNameModal, setShowNameModal] = useState(false);
+    const [isUpdatingName, setIsUpdatingName] = useState(false);
+
+    // Helper function to check if user needs to complete profile
+    const isUserNameMissing = (user: Models.User<Models.Preferences> | null) => {
+        if (!user || !user.name) return true;
+        
+        // Check if name is just the email (Appwrite default)
+        const name = user.name.trim();
+        const email = user.email;
+        if (name === email) return true;
+        
+        // Check if name is empty or just whitespace
+        if (name.length === 0) return true;
+        
+        // Check user preferences for profile completion
+        if (user.prefs && user.prefs.profileComplete === false) return true;
+        
+        return false;
+    };
 
     // Dashboard sections configuration
     const dashboardSections: DashboardSection[] = [
@@ -110,11 +134,35 @@ const Dashboard = () => {
         document.title = "Validation Dashboard • Just Plan It!";
     }, []);
 
+    // Check if user needs to complete profile
+    useEffect(() => {
+        if (user && isUserNameMissing(user)) {
+            // Show name collection modal after a short delay
+            const timer = setTimeout(() => {
+                setShowNameModal(true);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [user]);
+
     useEffect(() => {
         if (idea) {
             analyzeIdea();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idea]);
+
+    const handleNameSubmit = async (name: string) => {
+        setIsUpdatingName(true);
+        try {
+            await updateUserName(name);
+            setShowNameModal(false);
+        } catch (error) {
+            console.error('Failed to update name:', error);
+        } finally {
+            setIsUpdatingName(false);
+        }
+    };
 
     // Analysis steps for the loading animation
     const analysisSteps = [
@@ -818,6 +866,13 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Name Collection Modal */}
+            <NameCollectionModal 
+                isOpen={showNameModal}
+                onSubmit={handleNameSubmit}
+                isLoading={isUpdatingName}
+            />
         </div>
     );
 };

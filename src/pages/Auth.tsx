@@ -22,18 +22,17 @@ const Auth = () => {
 
     useEffect(() => {
         if (isAuthenticated) {
-            // Check if there's a pending idea in sessionStorage
+            // Simple redirect logic - if already authenticated, redirect
             const pendingIdea = sessionStorage.getItem('pendingIdea');
             if (pendingIdea) {
                 sessionStorage.removeItem('pendingIdea');
                 navigate(`/dashboard?idea=${encodeURIComponent(pendingIdea)}`);
             } else {
-                // Redirect to the intended page or dashboard
                 const from = location.state?.from?.pathname || '/dashboard';
                 navigate(from, { replace: true });
             }
         }
-    }, [isAuthenticated, navigate, location]);
+    }, [isAuthenticated, navigate, location.state]);
 
     const handleOTPSent = (newUserId: string, email: string) => {
         setUserId(newUserId);
@@ -47,8 +46,17 @@ const Auth = () => {
         setUserEmail('');
     };
 
-    const handleVerificationSuccess = () => {
-        // The useEffect above will handle the redirect
+    const handleOTPVerified = () => {
+        // User is authenticated - redirect to dashboard
+        // The dashboard will handle name collection if needed
+        const pendingIdea = sessionStorage.getItem('pendingIdea');
+        if (pendingIdea) {
+            sessionStorage.removeItem('pendingIdea');
+            navigate(`/dashboard?idea=${encodeURIComponent(pendingIdea)}`);
+        } else {
+            const from = location.state?.from?.pathname || '/dashboard';
+            navigate(from, { replace: true });
+        }
     };
 
     return (
@@ -60,14 +68,16 @@ const Auth = () => {
             <Navigation />
             
             <div className="relative z-10 flex flex-col items-center justify-center px-6 py-16 min-h-[80vh]">
-                {currentStep === 'email' ? (
+                {currentStep === 'email' && (
                     <EmailInput onOTPSent={handleOTPSent} />
-                ) : (
+                )}
+                
+                {currentStep === 'otp' && (
                     <OTPInput
                         userId={userId}
                         email={userEmail}
                         onBack={handleBackToEmail}
-                        onSuccess={handleVerificationSuccess}
+                        onSuccess={handleOTPVerified}
                     />
                 )}
             </div>

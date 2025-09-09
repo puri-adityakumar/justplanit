@@ -3,6 +3,10 @@ import { Models, ID } from 'appwrite';
 import { account } from '@/lib/appwrite';
 import { AuthContext, AuthContextType } from '@/contexts/AuthContext';
 
+interface UserPreferences extends Models.Preferences {
+    profileComplete?: boolean;
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -54,12 +58,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsVerifying(true);
             await account.createSession(userId, secret);
             const currentUser = await account.get();
+            
             setUser(currentUser);
             setIsOTPSent(false);
             setSecurityPhrase(undefined);
+            
+            return currentUser;
         } finally {
             setIsVerifying(false);
         }
+    };
+
+    const updateUserName = async (name: string) => {
+        // Update the user's name
+        const updatedUser = await account.updateName(name);
+        
+        // Set profile as complete in preferences
+        try {
+            await account.updatePrefs({ profileComplete: true });
+        } catch (error) {
+            console.warn('Failed to update preferences:', error);
+        }
+        
+        // Get the updated user with new preferences
+        const finalUser = await account.get();
+        setUser(finalUser);
+        return finalUser;
     };
 
     const logout = async () => {
@@ -73,6 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         sendOTP,
         verifyOTP,
+        updateUserName,
         logout,
         isLoading,
         isAuthenticated: !!user,

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Models } from 'appwrite';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -39,9 +40,11 @@ export const OTPInput: React.FC<OTPInputProps> = ({ userId, email, onBack, onSuc
 
         try {
             await verifyOTP(userId, code);
+            
+            // Always redirect to dashboard - name collection will be handled there
             onSuccess();
             toast({
-                title: "Welcome!",
+                title: "Welcome! 🎉",
                 description: "You've successfully signed in.",
             });
         } catch (error) {
@@ -80,9 +83,11 @@ export const OTPInput: React.FC<OTPInputProps> = ({ userId, email, onBack, onSuc
             const verifyCode = async () => {
                 try {
                     await verifyOTP(userId, code);
+                    
+                    // Always redirect to dashboard - name collection will be handled there
                     onSuccess();
                     toast({
-                        title: "Welcome!",
+                        title: "Welcome! 🎉",
                         description: "You've successfully signed in.",
                     });
                 } catch (error) {
