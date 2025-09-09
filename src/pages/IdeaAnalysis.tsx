@@ -4,20 +4,20 @@ import { GradientBars } from "@/components/ui/bg-bars";
 import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { AnalysisHeader } from "@/components/analysis/AnalysisHeader";
+import { AnalysisQuickStats } from "@/components/analysis/AnalysisQuickStats";
+import { AnalysisLoading } from "@/components/analysis/AnalysisLoading";
+import { AnalysisError } from "@/components/analysis/AnalysisError";
+import { AnalysisCallToAction } from "@/components/analysis/AnalysisCallToAction";
 import {
   TrendingUp,
   Users,
-  DollarSign,
-  AlertTriangle,
   CheckCircle,
   Globe,
   ArrowLeft,
-  Download,
-  Share2,
+  AlertTriangle,
   Brain,
-  Search,
-  RefreshCw
+  Search
 } from "lucide-react";
 import { getIdeaBySlug, type ValidatedIdea } from "@/data/dummyIdeas";
 import { ValidationResult } from "@/types/validation";
@@ -139,16 +139,6 @@ const IdeaAnalysis = () => {
     }
   }, [ideaData]);
 
-  const getVerdictColor = (verdict: string) => {
-    switch (verdict) {
-      case 'STRONG_GO': return 'bg-green-500 text-white';
-      case 'GO': return 'bg-green-400 text-white';
-      case 'CONDITIONAL': return 'bg-yellow-500 text-black';
-      case 'NO_GO': return 'bg-red-500 text-white';
-      default: return 'bg-gray-500 text-white';
-    }
-  };
-
   if (!ideaData) {
     return (
       <div className="min-h-screen bg-black relative">
@@ -172,80 +162,22 @@ const IdeaAnalysis = () => {
   }
 
   if (loading || ideaData.status === 'analyzing') {
-    const CurrentIcon = currentStep < analysisSteps.length ? analysisSteps[currentStep].icon : Brain;
-    const currentText = currentStep < analysisSteps.length ? analysisSteps[currentStep].text : "Analysis complete!";
-
     return (
-      <div className="min-h-screen bg-black relative">
-        <GradientBars bars={25} colors={['#ef4444', 'transparent']} />
-        <Navigation />
-
-        <div className="relative z-10 flex flex-col items-center justify-center px-6 py-16 min-h-[80vh]">
-          <div className="text-center max-w-2xl">
-            <div className="flex items-center gap-4 mb-8">
-              <Link to="/dashboard">
-                <Button variant="outline" size="sm" className="border-primary/20">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-            </div>
-
-            <h1 className="text-4xl md:text-6xl font-instrument font-bold text-foreground mb-8 leading-tight">
-              <span className="text-white">Analyzing Your Idea</span>
-            </h1>
-
-            <div className="bg-card/20 backdrop-blur-md border border-border/30 rounded-lg p-6 mb-8">
-              <p className="text-lg text-foreground/80 mb-6 italic text-center">
-                "{ideaData.description}"
-              </p>
-
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <CurrentIcon className="h-8 w-8 text-primary animate-spin" />
-                <span className="text-xl font-medium text-foreground text-center">
-                  {currentText}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 text-foreground/60">
-              <Globe className="h-5 w-5 animate-spin" />
-              <span className="text-sm">This may take a few moments...</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AnalysisLoading 
+        ideaDescription={ideaData.description}
+        currentStep={currentStep}
+        progress={(currentStep / analysisSteps.length) * 100}
+        analysisSteps={analysisSteps}
+      />
     );
   }
 
   if (error || ideaData.status === 'failed') {
     return (
-      <div className="min-h-screen bg-black relative">
-        <GradientBars bars={25} colors={['#ef4444', 'transparent']} />
-        <Navigation />
-        <div className="relative z-10 flex items-center justify-center min-h-[80vh]">
-          <Card className="bg-card/30 backdrop-blur-xl border-border/40 p-8 max-w-md text-center">
-            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-4">Analysis Failed</h2>
-            <p className="text-foreground/70 mb-6">{error || 'Failed to analyze this idea'}</p>
-            <div className="flex gap-3 justify-center">
-              <Button 
-                onClick={() => analyzeIdea(ideaData.description)} 
-                className="bg-primary hover:bg-primary/90"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
-              </Button>
-              <Link to="/dashboard">
-                <Button variant="outline" className="border-border/40">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        </div>
-      </div>
+      <AnalysisError 
+        error={error}
+        onRetry={() => analyzeIdea(ideaData.description)}
+      />
     );
   }
 
@@ -260,73 +192,12 @@ const IdeaAnalysis = () => {
 
       <div className="relative z-10 px-6 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-4 mb-4">
-              <Link to="/dashboard">
-                <Button variant="outline" size="sm" className="border-primary/20">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-              <div className="flex gap-2 ml-auto">
-                <Button variant="outline" size="sm" className="border-primary/20">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Report
-                </Button>
-                <Button variant="outline" size="sm" className="border-primary/20">
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
-              </div>
-            </div>
+          <AnalysisHeader 
+            title={ideaData.title}
+            description={ideaData.description}
+          />
 
-            <h1 className="text-4xl md:text-5xl font-instrument font-bold text-white mb-4">
-              {ideaData.title}
-            </h1>
-            <p className="text-xl text-foreground/80 italic mb-6">
-              "{ideaData.description}"
-            </p>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">
-                    {validationData.executive_summary.viability_score}/10
-                  </div>
-                  <div className="text-sm text-foreground/60">Viability Score</div>
-                </div>
-              </Card>
-
-              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4">
-                <div className="text-center">
-                  <Badge className={`${getVerdictColor(validationData.executive_summary.verdict)} mb-1`}>
-                    {validationData.executive_summary.verdict.replace('_', ' ')}
-                  </Badge>
-                  <div className="text-sm text-foreground/60">Verdict</div>
-                </div>
-              </Card>
-
-              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary mb-1">
-                    {validationData.executive_summary.market_opportunity}
-                  </div>
-                  <div className="text-sm text-foreground/60">Market Size</div>
-                </div>
-              </Card>
-
-              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-primary mb-1">
-                    {validationData.executive_summary.time_to_market}
-                  </div>
-                  <div className="text-sm text-foreground/60">Time to Market</div>
-                </div>
-              </Card>
-            </div>
-          </div>
+          <AnalysisQuickStats validationData={validationData} />
 
           {/* Executive Summary */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
@@ -404,28 +275,7 @@ const IdeaAnalysis = () => {
             </Card>
           </div>
 
-          {/* Call to Action */}
-          <div className="text-center">
-            <Card className="bg-card/20 backdrop-blur-xl border-border/30 p-8">
-              <h3 className="text-2xl font-bold text-white mb-4">
-                Ready to take action on your startup idea?
-              </h3>
-              <p className="text-foreground/60 mb-6">
-                Based on this comprehensive analysis, here are your recommended next steps.
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  <Download className="h-5 w-5 mr-2" />
-                  Download Full Report
-                </Button>
-                <Link to="/dashboard">
-                  <Button variant="outline" size="lg" className="border-primary/20">
-                    Validate Another Idea
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          </div>
+          <AnalysisCallToAction />
         </div>
       </div>
     </div>
