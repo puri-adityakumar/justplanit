@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 import { PromptInputBox } from "@/components/ui/ai-prompt-box";
 import { QuickStartExamples } from "@/components/QuickStartExamples";
 
@@ -9,10 +10,18 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onSendMessage }: HeroSectionProps) => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = (message: string, files?: File[]) => {
     if (!message.trim()) return;
+
+    if (!isAuthenticated) {
+      // Store the idea in sessionStorage to use after login
+      sessionStorage.setItem('pendingIdea', message.trim());
+      navigate('/auth');
+      return;
+    }
 
     setIsLoading(true);
     // Navigate directly to dashboard with the idea

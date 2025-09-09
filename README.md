@@ -13,13 +13,15 @@ Just Plan It! is a cutting-edge web application that leverages artificial intell
 ### ✨ Key Features
 
 - **🤖 AI-Powered Analysis**: Advanced AI algorithms analyze your startup idea across multiple dimensions
-- **📊 Interactive Dashboard**: Beautiful, animated dashboard with comprehensive validation results
+- **� Secure Authentication**: Passwordless email OTP authentication with Appwrite
+- **�📊 Interactive Dashboard**: Beautiful, animated dashboard with comprehensive validation results
 - **📈 Market Intelligence**: Real-time market analysis with size, trends, and opportunities
 - **🏆 Competitive Analysis**: In-depth competitor research and positioning insights
 - **💰 Financial Projections**: Revenue forecasts, funding requirements, and ROI calculations
 - **🛠️ Technical Feasibility**: Assessment of technical complexity and resource requirements
 - **⚠️ Risk Assessment**: Comprehensive risk analysis with mitigation strategies
 - **🗺️ Implementation Roadmap**: Phase-by-phase execution plan with timelines and budgets
+- **👤 User Profiles**: Save and track your validation history
 - **📄 PDF Export**: Professional report generation with one-click export
 - **🎨 Smooth Animations**: Framer Motion powered animations for enhanced UX
 
@@ -33,6 +35,7 @@ Just Plan It! is a cutting-edge web application that leverages artificial intell
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18 + TypeScript
+- **Authentication**: Appwrite (Email OTP)
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Animations**: Framer Motion
 - **Routing**: React Router DOM
@@ -75,8 +78,17 @@ Just Plan It! is a cutting-edge web application that leverages artificial intell
    Add your API keys to `.env.local`:
 
    ```env
+   # OpenRouter API for AI analysis
    VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
+
+   # Appwrite for authentication
+   VITE_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+   VITE_APPWRITE_PROJECT_ID=your_project_id_here
+   VITE_APPWRITE_DATABASE_ID=your_database_id_here
+   VITE_APPWRITE_COLLECTION_ID=your_collection_id_here
    ```
+
+   📖 **See [APPWRITE_SETUP.md](./APPWRITE_SETUP.md) for detailed Appwrite configuration**
 
 4. **Start the development server**
 
