@@ -4,11 +4,18 @@ import { GradientBars } from "@/components/ui/bg-bars";
 import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnalysisHeader } from "@/components/analysis/AnalysisHeader";
 import { AnalysisQuickStats } from "@/components/analysis/AnalysisQuickStats";
 import { AnalysisLoading } from "@/components/analysis/AnalysisLoading";
 import { AnalysisError } from "@/components/analysis/AnalysisError";
 import { AnalysisCallToAction } from "@/components/analysis/AnalysisCallToAction";
+import { PRDSection } from "@/components/analysis/PRDSection";
+import { TechStackSection } from "@/components/analysis/TechStackSection";
+import { CostAnalysisSection } from "@/components/analysis/CostAnalysisSection";
+import { RoadmapSection } from "@/components/analysis/RoadmapSection";
+import { AIContextSection } from "@/components/analysis/AIContextSection";
 import {
   TrendingUp,
   Users,
@@ -17,7 +24,15 @@ import {
   ArrowLeft,
   AlertTriangle,
   Brain,
-  Search
+  Search,
+  FileText,
+  Layers,
+  DollarSign,
+  Calendar,
+  Eye,
+  Palette,
+  GitBranch,
+  Map
 } from "lucide-react";
 import { getIdeaBySlug, type ValidatedIdea } from "@/data/dummyIdeas";
 import { ValidationResult } from "@/types/validation";
@@ -199,83 +214,227 @@ const IdeaAnalysis = () => {
 
           <AnalysisQuickStats validationData={validationData} />
 
-          {/* Executive Summary */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-            <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6 xl:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <TrendingUp className="h-6 w-6 text-primary" />
-                <h3 className="text-xl font-bold text-white">Executive Summary</h3>
-              </div>
+          {/* Tabbed Interface */}
+          <Tabs defaultValue="overview" className="mt-8">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 bg-card/20 backdrop-blur-md border-border/30">
+              <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <Eye className="h-4 w-4" />
+                <span className="hidden sm:inline">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="prd" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">PRD</span>
+              </TabsTrigger>
+              <TabsTrigger value="tech-stack" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <Layers className="h-4 w-4" />
+                <span className="hidden sm:inline">Tech Stack</span>
+              </TabsTrigger>
+              <TabsTrigger value="costs" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <DollarSign className="h-4 w-4" />
+                <span className="hidden sm:inline">Costs</span>
+              </TabsTrigger>
+              <TabsTrigger value="roadmap" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">Roadmap</span>
+              </TabsTrigger>
+              <TabsTrigger value="design" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <Palette className="h-4 w-4" />
+                <span className="hidden sm:inline">Design</span>
+              </TabsTrigger>
+              <TabsTrigger value="workflows" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <GitBranch className="h-4 w-4" />
+                <span className="hidden sm:inline">Workflows</span>
+              </TabsTrigger>
+              <TabsTrigger value="market" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <TrendingUp className="h-4 w-4" />
+                <span className="hidden sm:inline">Market</span>
+              </TabsTrigger>
+              <TabsTrigger value="ai-context" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
+                <Brain className="h-4 w-4" />
+                <span className="hidden sm:inline">AI Context</span>
+              </TabsTrigger>
+            </TabsList>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="text-lg font-semibold text-white mb-3">Key Strengths</h4>
-                  <div className="space-y-2">
-                    {validationData.executive_summary.key_strengths.map((strength, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-foreground/80">{strength}</span>
+            {/* Overview Tab - Current Market Analysis */}
+            <TabsContent value="overview" className="mt-6">
+              {/* Executive Summary */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6 xl:col-span-2">
+                  <div className="flex items-center gap-3 mb-4">
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                    <h3 className="text-xl font-bold text-white">Executive Summary</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-3">Key Strengths</h4>
+                      <div className="space-y-2">
+                        {validationData.executive_summary.key_strengths.map((strength, index) => (
+                          <div key={index} className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-foreground/80">{strength}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-lg font-semibold text-white mb-3">Key Challenges</h4>
-                  <div className="space-y-2">
-                    {validationData.executive_summary.key_weaknesses.map((weakness, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-foreground/80">{weakness}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Market Analysis */}
-            <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <Globe className="h-6 w-6 text-primary" />
-                <h3 className="text-xl font-bold text-white">Market Analysis</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <div className="text-sm text-foreground/60 mb-1">Target Market</div>
-                  <div className="text-foreground/80">{validationData.market_analysis.target_market.demographics}</div>
-                </div>
-
-                <div>
-                  <div className="text-sm text-foreground/60 mb-1">Market Size</div>
-                  <div className="text-2xl font-bold text-primary">{validationData.market_analysis.market_size.tam}</div>
-                </div>
-
-                <div>
-                  <div className="text-sm text-foreground/60 mb-1">Growth Rate</div>
-                  <div className="text-lg font-semibold text-green-500">
-                    +{validationData.market_analysis.target_market.growth_rate}%
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-sm text-foreground/60 mb-2">Market Readiness</div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-background/20 rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${validationData.market_analysis.market_readiness * 10}%` }}
-                      ></div>
                     </div>
-                    <span className="text-primary font-semibold">{validationData.market_analysis.market_readiness}/10</span>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-3">Key Challenges</h4>
+                      <div className="space-y-2">
+                        {validationData.executive_summary.key_weaknesses.map((weakness, index) => (
+                          <div key={index} className="flex items-start gap-2">
+                            <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-foreground/80">{weakness}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Market Analysis */}
+                <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Globe className="h-6 w-6 text-primary" />
+                    <h3 className="text-xl font-bold text-white">Market Analysis</h3>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-sm text-foreground/60 mb-1">Target Market</div>
+                      <div className="text-foreground/80">{validationData.market_analysis.target_market.demographics}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm text-foreground/60 mb-1">Market Size</div>
+                      <div className="text-2xl font-bold text-primary">{validationData.market_analysis.market_size.tam}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm text-foreground/60 mb-1">Growth Rate</div>
+                      <div className="text-lg font-semibold text-green-500">
+                        +{validationData.market_analysis.target_market.growth_rate}%
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm text-foreground/60 mb-2">Market Readiness</div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-background/20 rounded-full h-2">
+                          <div
+                            className="bg-primary h-2 rounded-full transition-all duration-1000"
+                            style={{ width: `${validationData.market_analysis.market_readiness * 10}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-primary font-semibold">{validationData.market_analysis.market_readiness}/10</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              <AnalysisCallToAction />
+            </TabsContent>
+
+            {/* PRD Tab */}
+            <TabsContent value="prd" className="mt-6">
+              <PRDSection ideaData={ideaData} validationData={validationData} />
+            </TabsContent>
+
+            {/* Tech Stack Tab */}
+            <TabsContent value="tech-stack" className="mt-6">
+              <TechStackSection ideaData={ideaData} />
+            </TabsContent>
+
+            {/* Costs Tab */}
+            <TabsContent value="costs" className="mt-6">
+              <CostAnalysisSection ideaData={ideaData} />
+            </TabsContent>
+
+            {/* Roadmap Tab */}
+            <TabsContent value="roadmap" className="mt-6">
+              <RoadmapSection ideaData={ideaData} />
+            </TabsContent>
+
+            {/* Design Tab - Placeholder */}
+            <TabsContent value="design" className="mt-6">
+              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-8 text-center">
+                <Palette className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Design System</h3>
+                <p className="text-foreground/70 mb-4">
+                  Coming soon! This will include design guidelines, component libraries, and UI/UX recommendations.
+                </p>
+                <Badge variant="outline">Under Development</Badge>
+              </Card>
+            </TabsContent>
+
+            {/* Workflows Tab - Placeholder */}
+            <TabsContent value="workflows" className="mt-6">
+              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-8 text-center">
+                <GitBranch className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Workflow Diagrams</h3>
+                <p className="text-foreground/70 mb-4">
+                  Coming soon! This will include user journey flows, technical workflows, and process diagrams.
+                </p>
+                <Badge variant="outline">Under Development</Badge>
+              </Card>
+            </TabsContent>
+
+            {/* Market Tab - Existing Market Analysis */}
+            <TabsContent value="market" className="mt-6">
+              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                  <h2 className="text-2xl font-bold text-white">Detailed Market Analysis</h2>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-4">Target Market</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm text-foreground/60 mb-1">Demographics</div>
+                        <div className="text-foreground/80">{validationData.market_analysis.target_market.demographics}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-foreground/60 mb-1">Growth Rate</div>
+                        <div className="text-lg font-semibold text-green-500">
+                          +{validationData.market_analysis.target_market.growth_rate}% annually
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-4">Market Opportunity</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm text-foreground/60 mb-1">Total Addressable Market</div>
+                        <div className="text-2xl font-bold text-primary">{validationData.market_analysis.market_size.tam}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-foreground/60 mb-1">Market Readiness Score</div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-background/20 rounded-full h-3">
+                            <div
+                              className="bg-primary h-3 rounded-full transition-all duration-1000"
+                              style={{ width: `${validationData.market_analysis.market_readiness * 10}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-primary font-semibold">{validationData.market_analysis.market_readiness}/10</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          </div>
+              </Card>
+            </TabsContent>
 
-          <AnalysisCallToAction />
+            {/* AI Context Tab */}
+            <TabsContent value="ai-context" className="mt-6">
+              <AIContextSection ideaData={ideaData} />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
