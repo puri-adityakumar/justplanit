@@ -237,7 +237,7 @@ const IdeaAnalysis = () => {
   }
 
   // Get validation data from the overview section instead of analysis.result
-  const validationData = ideaData?.sections?.overview as unknown as OverviewResult | undefined;
+  const validationData = ideaData?.sections?.overview as unknown as ValidationResult | undefined;
   if (!validationData || !ideaData) {
     return null;
   }
@@ -296,86 +296,103 @@ const IdeaAnalysis = () => {
             {/* Overview Tab - Current Market Analysis */}
             <TabsContent value="overview" className="mt-6">
               <div className="space-y-8">
-                {/* Idea Summary */}
+                {/* Executive Summary */}
                 <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Idea Summary</h3>
-                  <p className="text-foreground/80">{validationData.overview.idea_summary}</p>
+                  <h3 className="text-xl font-bold text-white mb-4">Executive Summary</h3>
+                  <div className="text-foreground/80 space-y-2">
+                    <p><strong>Viability Score:</strong> {validationData?.executive_summary?.viability_score ?? 'N/A'}/10</p>
+                    <p><strong>Verdict:</strong> {validationData?.executive_summary?.verdict ?? 'N/A'}</p>
+                    <p><strong>Market Opportunity:</strong> {validationData?.executive_summary?.market_opportunity ?? 'N/A'}</p>
+                    <p><strong>Time to Market:</strong> {validationData?.executive_summary?.time_to_market ?? 'N/A'}</p>
+                  </div>
                 </Card>
 
-                {/* Key Features & Pain Points */}
+                {/* Key Strengths and Weaknesses */}
                 <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Key Features & Pain Points</h3>
-                  <ul className="list-disc pl-5 space-y-2 text-foreground/80">
-                    {validationData.overview.key_features_and_pain_points.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
+                  <h3 className="text-xl font-bold text-white mb-4">Key Strengths and Weaknesses</h3>
+                  <div className="space-y-4 text-foreground/80">
+                    <div>
+                      <strong>Strengths:</strong>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {validationData?.executive_summary?.key_strengths?.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        )) ?? <li>N/A</li>}
+                      </ul>
+                    </div>
+                    <div>
+                      <strong>Weaknesses:</strong>
+                      <ul className="list-disc pl-5 space-y-2">
+                        {validationData?.executive_summary?.key_weaknesses?.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        )) ?? <li>N/A</li>}
+                      </ul>
+                    </div>
+                  </div>
                 </Card>
 
-                {/* Problems Solved */}
+                {/* Problems Solved / Key Success Factors */}
                 <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Problems Solved</h3>
+                  <h3 className="text-xl font-bold text-white mb-4">Key Success Factors</h3>
                   <ul className="list-disc pl-5 space-y-2 text-foreground/80">
-                    {validationData.overview.problems_solved.map((item, index) => (
+                    {validationData?.recommendations?.key_success_factors?.map((item, index) => (
                       <li key={index}>{item}</li>
-                    ))}
+                    )) ?? <li>N/A</li>}
                   </ul>
                 </Card>
 
                 {/* Market Analysis */}
                 <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
                   <h3 className="text-xl font-bold text-white mb-4">Market Analysis</h3>
-                  <div className="space-y-4 text-foreground/80">
-                    <div>
-                      <strong>Target Audience:</strong> {validationData.overview.market_analysis.target_audience}
-                    </div>
-                    <div>
-                      <strong>Growth Rate:</strong> {validationData.overview.market_analysis.growth_rate}
-                    </div>
-                    <div>
-                      <strong>Opportunity:</strong> {validationData.overview.market_analysis.opportunity}
-                    </div>
+                  <div className="text-foreground/80 space-y-2">
+                    <p><strong>Demographics:</strong> {validationData?.market_analysis?.target_market?.demographics ?? 'N/A'}</p>
+                    <p><strong>Growth Rate:</strong> {validationData?.market_analysis?.target_market?.growth_rate ?? 'N/A'}%</p>
+                    <p><strong>TAM:</strong> {validationData?.market_analysis?.market_size?.tam ?? 'N/A'}</p>
                   </div>
                 </Card>
 
-                {/* Risk Level */}
+                {/* Risk Assessment */}
                 <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Risk Level Assessment</h3>
+                  <h3 className="text-xl font-bold text-white mb-4">Risk Assessment</h3>
                   <div className="text-foreground/80">
-                    <strong>Level:</strong> {validationData.overview.risk_level.level}<br />
-                    <strong>Explanation:</strong> {validationData.overview.risk_level.explanation}
+                    <p><strong>Level:</strong> {validationData?.risk_assessment?.overall_risk_level ?? 'N/A'}</p>
+                    <p><strong>Risk Score:</strong> {validationData?.risk_assessment?.risk_score ?? 'N/A'}</p>
+                    <ul className="list-disc pl-5 space-y-2 mt-2">
+                      {validationData?.risk_assessment?.risks?.map((risk, index) => (
+                        <li key={index}>{risk.category}: {risk.risk}</li>
+                      )) ?? <li>N/A</li>}
+                    </ul>
                   </div>
                 </Card>
 
-                {/* Estimated Cost - With Dropdown */}
+                {/* Estimated Cost */}
                 <Accordion type="single" collapsible>
                   <AccordionItem value="cost">
                     <AccordionTrigger>
-                      <h3 className="text-xl font-bold text-white">Estimated Cost: ${validationData.overview.estimated_cost.total}</h3>
+                      <h3 className="text-xl font-bold text-white">Estimated Funding Required: ${validationData?.financial_projections?.funding_required ?? 'N/A'}</h3>
                     </AccordionTrigger>
                     <AccordionContent>
                       <ul className="space-y-2 text-foreground/80">
-                        {validationData.overview.estimated_cost.breakdown.map((item, index) => (
+                        {validationData?.financial_projections?.cost_structure?.map((item, index) => (
                           <li key={index}>
-                            <strong>{item.category}:</strong> ${item.amount} - {item.description}
+                            <strong>{item.category}:</strong> ${item.amount} ({item.percentage}%)
                           </li>
-                        ))}
+                        )) ?? <li>N/A</li>}
                       </ul>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
 
-                {/* AI Suggestions */}
+                {/* AI Suggestions / Priority Actions */}
                 <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">AI Suggestions</h3>
+                  <h3 className="text-xl font-bold text-white mb-4">Priority Actions</h3>
                   <ul className="list-disc pl-5 space-y-2 text-foreground/80">
-                    {validationData.overview.ai_suggestions.map((item, index) => (
+                    {validationData?.recommendations?.priority_actions?.map((item, index) => (
                       <li key={index}>{item}</li>
-                    ))}
+                    )) ?? <li>N/A</li>}
                   </ul>
                 </Card>
 
-                {/* Future Scope - With Dropdown */}
+                {/* Future Scope / Alternative Approaches */}
                 <Accordion type="single" collapsible>
                   <AccordionItem value="future-scope">
                     <AccordionTrigger>
@@ -383,9 +400,9 @@ const IdeaAnalysis = () => {
                     </AccordionTrigger>
                     <AccordionContent>
                       <ul className="list-disc pl-5 space-y-2 text-foreground/80">
-                        {validationData.overview.future_scope.map((item, index) => (
+                        {validationData?.recommendations?.alternative_approaches?.map((item, index) => (
                           <li key={index}>{item}</li>
-                        ))}
+                        )) ?? <li>N/A</li>}
                       </ul>
                     </AccordionContent>
                   </AccordionItem>
@@ -436,19 +453,34 @@ const IdeaAnalysis = () => {
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-4">Target Market</h3>
-                    <div className="text-foreground/80">
-                      <p><strong>Audience:</strong> {validationData.overview.market_analysis.target_audience}</p>
-                      <p><strong>Growth Rate:</strong> {validationData.overview.market_analysis.growth_rate}</p>
-                      <p><strong>Opportunity:</strong> {validationData.overview.market_analysis.opportunity}</p>
+                    <div className="text-foreground/80 space-y-2">
+                      <p><strong>Audience:</strong> {validationData?.market_analysis?.target_market?.demographics ?? 'N/A'}</p>
+                      <p><strong>Growth Rate:</strong> {validationData?.market_analysis?.target_market?.growth_rate ?? 'N/A'}%</p>
+                      <p><strong>Size:</strong> {validationData?.market_analysis?.target_market?.size ?? 'N/A'}</p>
                     </div>
                   </div>
 
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-4">Market Size</h3>
-                    <div className="text-foreground/80">
-                      <p><strong>Size Category:</strong> {validationData.quick_stats.market_size}</p>
-                      <p><strong>Time to Market:</strong> {validationData.quick_stats.time_to_market}</p>
+                    <div className="text-foreground/80 space-y-2">
+                      <p><strong>TAM:</strong> {validationData?.market_analysis?.market_size?.tam ?? 'N/A'}</p>
+                      <p><strong>SAM:</strong> {validationData?.market_analysis?.market_size?.sam ?? 'N/A'}</p>
+                      <p><strong>SOM:</strong> {validationData?.market_analysis?.market_size?.som ?? 'N/A'}</p>
                     </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-4">Trends</h3>
+                    <ul className="list-disc pl-5 space-y-2 text-foreground/80">
+                      {validationData?.market_analysis?.trends?.map((trend, index) => (
+                        <li key={index}>{trend.trend} (Impact: {trend.impact})</li>
+                      )) ?? <li>N/A</li>}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-4">Market Readiness</h3>
+                    <p className="text-foreground/80">{validationData?.market_analysis?.market_readiness ?? 'N/A'}/10</p>
                   </div>
                 </div>
               </Card>
