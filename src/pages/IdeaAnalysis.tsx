@@ -32,7 +32,6 @@ import {
   Calendar,
   Eye,
   Palette,
-  GitBranch,
   Map
 } from "lucide-react";
 import { ValidationResult } from "@/types/validation";
@@ -257,7 +256,7 @@ const IdeaAnalysis = () => {
 
           {/* Tabbed Interface */}
           <Tabs defaultValue="overview" className="mt-8">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 bg-card/20 backdrop-blur-md border-border/30">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 bg-card/20 backdrop-blur-md border-border/30">
               <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
                 <Eye className="h-4 w-4" />
                 <span className="hidden sm:inline">Overview</span>
@@ -281,10 +280,6 @@ const IdeaAnalysis = () => {
               <TabsTrigger value="design" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
                 <Palette className="h-4 w-4" />
                 <span className="hidden sm:inline">Design</span>
-              </TabsTrigger>
-              <TabsTrigger value="workflows" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
-                <GitBranch className="h-4 w-4" />
-                <span className="hidden sm:inline">Workflows</span>
               </TabsTrigger>
               <TabsTrigger value="market" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
                 <TrendingUp className="h-4 w-4" />
@@ -404,18 +399,6 @@ const IdeaAnalysis = () => {
                 <h3 className="text-xl font-semibold text-white mb-2">Design System</h3>
                 <p className="text-foreground/70 mb-4">
                   Coming soon! This will include design guidelines, component libraries, and UI/UX recommendations.
-                </p>
-                <Badge variant="outline">Under Development</Badge>
-              </Card>
-            </TabsContent>
-
-            {/* Workflows Tab - Placeholder */}
-            <TabsContent value="workflows" className="mt-6">
-              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-8 text-center">
-                <GitBranch className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">Workflow Diagrams</h3>
-                <p className="text-foreground/70 mb-4">
-                  Coming soon! This will include user journey flows, technical workflows, and process diagrams.
                 </p>
                 <Badge variant="outline">Under Development</Badge>
               </Card>
