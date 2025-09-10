@@ -2,6 +2,7 @@
 
 import { ValidationRequest, ValidationResponse, ValidationResult } from '@/types/validation';
 import { generateOverviewPrompt } from '@/lib/prompts/overview-prompt';
+import { generatePRDPrompt } from '@/lib/prompts/prd-prompt';
 
 // OpenRouter API configuration
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || 'sk-or-v1-your-key-here';
@@ -189,6 +190,59 @@ export class OpenRouterService {
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error occurred',
+                processing_time: Date.now() - startTime
+            };
+        }
+    }
+
+    // New method for PRD generation
+    async generatePRD(request: { idea: string }): Promise<ValidationResponse> {
+        const startTime = Date.now();
+
+        try {
+            const prompt = generatePRDPrompt(request.idea);
+
+            const requestBody = {
+                model: 'deepseek/deepseek-chat-v3.1:free',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are a product manager. Respond with valid JSON only.'
+                    },
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                temperature: 0.3,
+                max_tokens: 2000,
+            };
+
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: openRouterConfig.headers,
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error('OpenRouter API error');
+            }
+
+            const data = await response.json();
+            const assistantMessage = data.choices[0]?.message?.content;
+
+            const cleanedResponse = this.cleanJsonResponse(assistantMessage);
+            const prdResult = JSON.parse(cleanedResponse);
+
+            return {
+                success: true,
+                data: prdResult,
+                processing_time: Date.now() - startTime
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
                 processing_time: Date.now() - startTime
             };
         }

@@ -66,6 +66,10 @@ const IdeaAnalysis = () => {
   const [lastAnalysisRequest, setLastAnalysisRequest] = useState<string | null>(null);
   const [analysisStarted, setAnalysisStarted] = useState(false);
 
+  // Add states and generation function
+  const [prdLoading, setPrdLoading] = useState(false);
+  const [prdError, setPrdError] = useState<string | null>(null);
+
   // Check if we need to start analysis immediately
   const locationState = location.state as { pendingAnalysis?: boolean; ideaText?: string } | null;
   const shouldAnalyze = locationState?.pendingAnalysis && locationState?.ideaText;
@@ -138,6 +142,27 @@ const IdeaAnalysis = () => {
       setIsAnalyzing(false); // Always reset the flag
     }
   }, [updateAnalysis, updateSection, isAnalyzing, lastAnalysisRequest]);
+
+  const generatePRD = async () => {
+    if (!ideaData?.idea.$id || prdLoading) return;
+
+    setPrdLoading(true);
+    setPrdError(null);
+
+    try {
+      const response = await openRouterService.generatePRD({ idea: ideaData.idea.description || '' });
+
+      if (response.success && response.data) {
+        await updateSection('prd', response.data);
+      } else {
+        throw new Error('PRD generation failed');
+      }
+    } catch (err) {
+      setPrdError(err instanceof Error ? err.message : 'Failed to generate PRD');
+    } finally {
+      setPrdLoading(false);
+    }
+  };
 
   useEffect(() => {
     // 🛡️ SINGLE TRIGGER LOGIC: Only one path should execute
@@ -412,7 +437,19 @@ const IdeaAnalysis = () => {
 
             {/* PRD Tab */}
             <TabsContent value="prd" className="mt-6">
-              <PRDSection ideaData={ideaData} validationData={undefined} />
+              {ideaData.sections?.prd ? (
+                <PRDSection ideaData={ideaData} validationData={validationData} prdData={ideaData.sections.prd} />
+              ) : (
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-8 text-center">
+                  <FileText className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No PRD Available</h3>
+                  <p className="text-foreground/70 mb-4">Generate a Product Requirements Document for this idea.</p>
+                  <Button onClick={generatePRD} disabled={prdLoading}>
+                    {prdLoading ? 'Generating...' : 'Generate PRD'}
+                  </Button>
+                  {prdError && <p className="text-red-500 mt-4">{prdError}</p>}
+                </Card>
+              )}
             </TabsContent>
 
             {/* Tech Stack Tab */}
