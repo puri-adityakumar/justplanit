@@ -13,7 +13,6 @@ import { AnalysisError } from "@/components/analysis/AnalysisError";
 import { IdeaLoading } from "@/components/analysis/IdeaLoading";
 import { PRDSection } from "@/components/analysis/PRDSection";
 import { TechStackSection } from "@/components/analysis/TechStackSection";
-import { CostAnalysisSection } from "@/components/analysis/CostAnalysisSection";
 import { RoadmapSection } from "@/components/analysis/RoadmapSection";
 import { AIContextSection } from "@/components/analysis/AIContextSection";
 import { TechStackQuestionnaire } from "@/components/analysis/TechStackQuestionnaire";
@@ -497,7 +496,14 @@ const IdeaAnalysis = () => {
 
             {/* Costs Tab */}
             <TabsContent value="costs" className="mt-6">
-              <CostAnalysisSection ideaData={ideaData} />
+              <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-8 text-center">
+                <DollarSign className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Cost Analysis</h3>
+                <p className="text-foreground/70 mb-4">
+                  Coming soon! This will include detailed cost breakdowns, pricing estimates, and financial projections.
+                </p>
+                <Badge variant="outline">Under Development</Badge>
+              </Card>
             </TabsContent>
 
             {/* Roadmap Tab */}
