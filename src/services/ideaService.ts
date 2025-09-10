@@ -1,9 +1,9 @@
 import { databases } from '@/lib/appwrite';
 import { ID, Query, Models } from 'appwrite';
-import { 
+import {
   DATABASE_CONFIG,
-  IdeaDocument, 
-  IdeaAnalysisDocument, 
+  IdeaDocument,
+  IdeaAnalysisDocument,
   IdeaDataSectionDocument,
   CompleteIdea,
   CreateIdeaRequest,
@@ -27,7 +27,6 @@ export class IdeaService {
   // Create a new idea
   static async createIdea(request: CreateIdeaRequest): Promise<IdeaDocument> {
     const slug = await this.generateUniqueSlug();
-    const now = new Date().toISOString();
 
     const ideaData = {
       user_id: request.user_id,
@@ -36,9 +35,8 @@ export class IdeaService {
       description: request.description || null,
       slug,
       status: 'analyzing' as const,
-      is_public: false,
-      created_at: now,
-      updated_at: now
+      is_public: false
+      // Appwrite automatically adds $createdAt and $updatedAt
     };
 
     const response = await databases.createDocument(
@@ -61,7 +59,7 @@ export class IdeaService {
     return response as unknown as IdeaDocument;
   }
 
-    // Get idea by slug
+  // Get idea by slug
   static async getIdeaBySlug(slug: string): Promise<IdeaDocument | null> {
     try {
       const response = await databases.listDocuments(
@@ -69,8 +67,8 @@ export class IdeaService {
         this.collections.IDEAS,
         [Query.equal('slug', parseInt(slug))]
       );
-      
-      return response.documents.length > 0 
+
+      return response.documents.length > 0
         ? response.documents[0] as unknown as IdeaDocument
         : null;
     } catch (err) {
@@ -100,11 +98,9 @@ export class IdeaService {
           status: rawAnalysis.status,
           viability_score: rawAnalysis.viability_score,
           market_size: rawAnalysis.market_size,
-          result: rawAnalysis.result ? JSON.parse(rawAnalysis.result) : undefined,
-          error: rawAnalysis.error,
           completed_at: rawAnalysis.completed_at,
           created_at: rawAnalysis.$createdAt,
-          updated_at: rawAnalysis.updated_at
+          updated_at: rawAnalysis.$updatedAt
         };
       }
     } catch (error) {
@@ -118,15 +114,36 @@ export class IdeaService {
       [Query.equal('idea_id', ideaId)]
     );
 
-    // Parse sections into object
+    // Parse sections into object (with inference if section_type is missing)
     const sections: Partial<Record<SectionType, unknown>> = {};
     sectionsResponse.documents.forEach((doc) => {
       const sectionDoc = doc as unknown as IdeaDataSectionDocument;
       try {
-        sections[sectionDoc.section_type] = JSON.parse(sectionDoc.data);
+        const parsed: any = JSON.parse(sectionDoc.data);
+
+        // Infer section type when null or invalid
+        let inferredType: SectionType | null = (sectionDoc as any).section_type || null;
+        if (!inferredType) {
+          if (parsed && typeof parsed === 'object') {
+            if (parsed.suggested_stacks) {
+              inferredType = 'tech_stack';
+            } else if (parsed.user_personas || parsed.user_stories) {
+              inferredType = 'prd';
+            } else if (parsed.executive_summary) {
+              inferredType = 'overview';
+            } else if (parsed.market_analysis && !parsed.executive_summary) {
+              inferredType = 'market';
+            } else {
+              inferredType = 'overview';
+            }
+          } else {
+            inferredType = 'overview';
+          }
+        }
+
+        sections[inferredType] = parsed;
       } catch (error) {
-        console.error(`Failed to parse section ${sectionDoc.section_type}:`, error);
-        sections[sectionDoc.section_type] = null;
+        console.error(`Failed to parse section ${sectionDoc && (sectionDoc as any).section_type}:`, error);
       }
     });
 
@@ -144,32 +161,25 @@ export class IdeaService {
       this.collections.IDEAS,
       [
         Query.equal('user_id', userId),
-        Query.orderDesc('created_at')
+        Query.orderDesc('$createdAt')
       ]
     );
     return response.documents as unknown as IdeaDocument[];
   }
 
   // Update idea
-  static async updateIdea(ideaId: string, updates: Partial<IdeaDocument>): Promise<IdeaDocument> {
-    const updateData = {
-      ...updates,
-      updated_at: new Date().toISOString()
-    };
-
+  static async updateIdea(ideaId: string, updates: Partial<Omit<IdeaDocument, '$createdAt' | '$updatedAt'>>): Promise<IdeaDocument> {
     const response = await databases.updateDocument(
       this.db,
       this.collections.IDEAS,
       ideaId,
-      updateData
+      updates
     );
     return response as unknown as IdeaDocument;
   }
 
   // Create or update analysis
   static async upsertAnalysis(request: UpdateIdeaAnalysisRequest): Promise<CompleteIdea['analysis']> {
-    const now = new Date().toISOString();
-
     // Check if analysis exists
     const existingResponse = await databases.listDocuments(
       this.db,
@@ -182,10 +192,8 @@ export class IdeaService {
       status: request.status || 'analyzing',
       viability_score: request.viability_score || null,
       market_size: request.market_size || null,
-      result: request.result ? JSON.stringify(request.result) : null,
-      error: request.error || null,
-      completed_at: request.completed_at || null,
-      updated_at: now
+      completed_at: request.completed_at || null
+      // Appwrite automatically manages $createdAt and $updatedAt
     };
 
     let response: Models.Document;
@@ -208,7 +216,21 @@ export class IdeaService {
     }
 
     const rawAnalysis = response as unknown as IdeaAnalysisDocument;
-    
+
+    // Keep ideas.status in sync for dashboard cards
+    try {
+      if (request.status) {
+        await databases.updateDocument(
+          this.db,
+          this.collections.IDEAS,
+          request.idea_id,
+          { status: request.status }
+        );
+      }
+    } catch (err) {
+      console.error('Failed to sync idea status:', err);
+    }
+
     // Return parsed format
     return {
       $id: rawAnalysis.$id,
@@ -216,18 +238,14 @@ export class IdeaService {
       status: rawAnalysis.status,
       viability_score: rawAnalysis.viability_score,
       market_size: rawAnalysis.market_size,
-      result: rawAnalysis.result ? JSON.parse(rawAnalysis.result) : undefined,
-      error: rawAnalysis.error,
       completed_at: rawAnalysis.completed_at,
       created_at: rawAnalysis.$createdAt,
-      updated_at: rawAnalysis.updated_at
+      updated_at: rawAnalysis.$updatedAt
     };
   }
 
   // Create or update section data
   static async upsertSection(request: CreateSectionRequest): Promise<IdeaDataSectionDocument> {
-    const now = new Date().toISOString();
-
     // Check if section exists
     const existingResponse = await databases.listDocuments(
       this.db,
@@ -241,8 +259,8 @@ export class IdeaService {
     const sectionData = {
       idea_id: request.idea_id,
       section_type: request.section_type,
-      data: JSON.stringify(request.data),
-      updated_at: now
+      data: JSON.stringify(request.data)
+      // Appwrite automatically manages $createdAt and $updatedAt
     };
 
     if (existingResponse.documents.length > 0) {
@@ -260,7 +278,7 @@ export class IdeaService {
         this.db,
         this.collections.IDEA_DATA_SECTIONS,
         ID.unique(),
-        { ...sectionData, created_at: now }
+        sectionData
       );
       return response as unknown as IdeaDataSectionDocument;
     }
@@ -313,7 +331,7 @@ export class IdeaService {
       this.collections.IDEAS,
       [
         Query.equal('status', status),
-        Query.orderDesc('created_at')
+        Query.orderDesc('$createdAt')
       ]
     );
     return response.documents as unknown as IdeaDocument[];
@@ -327,7 +345,7 @@ export class IdeaService {
       [
         Query.equal('is_public', true),
         Query.equal('status', 'completed'),
-        Query.orderDesc('created_at')
+        Query.orderDesc('$createdAt')
       ]
     );
     return response.documents as unknown as IdeaDocument[];

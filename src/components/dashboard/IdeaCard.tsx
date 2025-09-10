@@ -80,7 +80,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
       <div className="flex items-center justify-between mb-4">
         {getStatusBadge()}
         <span className="text-xs text-foreground/50">
-          {formatDate(idea.created_at)}
+          {formatDate(idea.$createdAt)}
         </span>
       </div>
 
@@ -127,7 +127,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
 
       <div className="flex gap-2">
         {idea.status === 'completed' && (
-          <Link to={`/idea/${idea.$id}`} className="flex-1">
+          <Link to={`/dashboard/${idea.slug}`} className="flex-1">
             <Button className="w-full bg-primary hover:bg-primary/90">
               View Analysis
             </Button>
@@ -135,7 +135,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
         )}
         
         {idea.status === 'analyzing' && (
-          <Link to={`/idea/${idea.$id}`} className="flex-1">
+          <Link to={`/dashboard/${idea.slug}`} className="flex-1">
             <Button variant="outline" className="w-full border-border/40">
               View Progress
             </Button>

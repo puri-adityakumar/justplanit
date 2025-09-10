@@ -59,7 +59,7 @@ const IdeaDetail = () => {
                         <h2 className="text-xl font-bold text-white mb-4">Error Loading Idea</h2>
                         <p className="text-foreground/70 mb-6">{error}</p>
                         <div className="flex gap-3 justify-center">
-                            <Link to="/main-dashboard">
+                            <Link to="/dashboard">
                                 <Button variant="outline" className="border-border/40">
                                     Back to Dashboard
                                 </Button>
@@ -81,7 +81,7 @@ const IdeaDetail = () => {
                         <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
                         <h2 className="text-xl font-bold text-white mb-4">Idea Not Found</h2>
                         <p className="text-foreground/70 mb-6">The idea you're looking for doesn't exist.</p>
-                        <Link to="/main-dashboard">
+                        <Link to="/dashboard">
                             <Button className="bg-primary hover:bg-primary/90">
                                 Back to Dashboard
                             </Button>
@@ -124,7 +124,7 @@ const IdeaDetail = () => {
                     {/* Header */}
                     <div className="mb-8">
                         <div className="flex items-center gap-4 mb-4">
-                            <Link to="/main-dashboard">
+                            <Link to="/dashboard">
                                 <Button variant="outline" size="sm" className="border-primary/20">
                                     <ArrowLeft className="h-4 w-4 mr-2" />
                                     Back to Dashboard
@@ -149,11 +149,11 @@ const IdeaDetail = () => {
                         <div className="flex items-center gap-4 mb-4">
                             {getStatusBadge()}
                             <span className="text-foreground/60">
-                                Created {formatDate(idea.idea.created_at)}
+                                Created {formatDate(idea.idea.$createdAt)}
                             </span>
-                            {idea.idea.updated_at !== idea.idea.created_at && (
+                            {idea.idea.$updatedAt !== idea.idea.$createdAt && (
                                 <span className="text-foreground/60">
-                                    • Updated {formatDate(idea.idea.updated_at)}
+                                    • Updated {formatDate(idea.idea.$updatedAt)}
                                 </span>
                             )}
                         </div>

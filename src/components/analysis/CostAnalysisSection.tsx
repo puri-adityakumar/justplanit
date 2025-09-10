@@ -70,7 +70,7 @@ export const CostAnalysisSection = ({ ideaData }: CostAnalysisSectionProps) => {
         monthly: 320,
         yearly: 3540,
         breakdown: [
-          { service: "Supabase Team", cost: 599/12 },
+          { service: "Supabase Team", cost: 599 / 12 },
           { service: "Vercel Pro", cost: 20 },
           { service: "Railway Pro", cost: 20 },
           { service: "OpenAI API", cost: 150 },
@@ -102,7 +102,7 @@ export const CostAnalysisSection = ({ ideaData }: CostAnalysisSectionProps) => {
 
       {/* Cost Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6 text-center">
+        <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6 text-center">
           <div className="text-2xl font-bold text-green-500 mb-2">
             ${costData.estimates.mvp.monthly}/mo
           </div>
@@ -112,7 +112,7 @@ export const CostAnalysisSection = ({ ideaData }: CostAnalysisSectionProps) => {
           </div>
         </Card>
 
-        <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6 text-center">
+        <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6 text-center">
           <div className="text-2xl font-bold text-yellow-500 mb-2">
             ${costData.estimates.growth.monthly}/mo
           </div>
@@ -122,7 +122,7 @@ export const CostAnalysisSection = ({ ideaData }: CostAnalysisSectionProps) => {
           </div>
         </Card>
 
-        <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6 text-center">
+        <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6 text-center">
           <div className="text-2xl font-bold text-red-500 mb-2">
             ${costData.estimates.scale.monthly}/mo
           </div>
@@ -136,7 +136,7 @@ export const CostAnalysisSection = ({ ideaData }: CostAnalysisSectionProps) => {
       {/* Service Breakdown */}
       <div className="space-y-4">
         {costData.services.map((service, index) => (
-          <Card key={index} className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+          <Card key={index} className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-white">{service.name}</h3>
@@ -146,18 +146,17 @@ export const CostAnalysisSection = ({ ideaData }: CostAnalysisSectionProps) => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {service.plans.map((plan, planIndex) => (
-                <div 
-                  key={planIndex} 
-                  className={`bg-background/10 rounded-lg p-4 relative ${
-                    plan.recommended ? 'ring-2 ring-primary' : ''
-                  }`}
+                <div
+                  key={planIndex}
+                  className={`bg-background/10 rounded-lg p-4 relative ${plan.recommended ? 'ring-2 ring-primary' : ''
+                    }`}
                 >
                   {plan.recommended && (
                     <Badge className="absolute -top-2 left-4 bg-primary text-primary-foreground">
                       Recommended
                     </Badge>
                   )}
-                  
+
                   <div className="mb-3">
                     <h4 className="font-semibold text-white">{plan.name}</h4>
                     <div className="text-xl font-bold text-primary">
@@ -182,7 +181,7 @@ export const CostAnalysisSection = ({ ideaData }: CostAnalysisSectionProps) => {
       </div>
 
       {/* Cost Breakdown by Stage */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <div className="flex items-center gap-3 mb-4">
           <Calculator className="h-5 w-5 text-primary" />
           <h3 className="text-xl font-semibold text-white">Detailed Cost Breakdown</h3>
@@ -258,7 +257,7 @@ export const CostAnalysisSection = ({ ideaData }: CostAnalysisSectionProps) => {
       </Card>
 
       {/* Cost Optimization Tips */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <div className="flex items-center gap-3 mb-4">
           <AlertCircle className="h-5 w-5 text-yellow-500" />
           <h3 className="text-xl font-semibold text-white">Cost Optimization Tips</h3>

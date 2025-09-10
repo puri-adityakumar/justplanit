@@ -238,6 +238,9 @@ const Dashboard = () => {
                 // Step 3: Save analysis data to database
                 // Note: In a real implementation, you would also save the sections data
                 // For now, we'll just store the validation result in memory
+
+                // Step 4: Redirect to analysis page with slug
+                navigate(`/dashboard/${newIdea.slug}`);
                 
             } else {
                 console.error('API call failed:', response.error);

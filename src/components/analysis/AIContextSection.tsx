@@ -60,7 +60,7 @@ Current component requirements:
 - Error boundaries and loading states
 
 Component should follow our design system:
-- Background: bg-card/20 backdrop-blur-md border-border/30
+- Background: bg-black/40 backdrop-blur-xl border-border/30
 - Text colors: text-white for headings, text-foreground/70 for body
 - Primary color: Custom red/pink gradient
 - Spacing: Consistent gap-4 and p-6 patterns
@@ -201,7 +201,7 @@ interface ValidationResult {
       </div>
 
       {/* Project Overview */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Project Overview</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -231,7 +231,7 @@ interface ValidationResult {
       </Card>
 
       {/* Coding Prompts */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">AI Assistant Prompts</h3>
         <div className="space-y-4">
           {aiContextData.codingPrompts.map((prompt, index) => (
@@ -259,7 +259,7 @@ interface ValidationResult {
       </Card>
 
       {/* Code Snippets */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <div className="flex items-center gap-3 mb-4">
           <Code className="h-5 w-5 text-primary" />
           <h3 className="text-xl font-semibold text-white">Code Snippets</h3>
@@ -290,7 +290,7 @@ interface ValidationResult {
       </Card>
 
       {/* Best Practices */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Development Best Practices</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {aiContextData.bestPractices.map((practice, index) => (
@@ -303,7 +303,7 @@ interface ValidationResult {
       </Card>
 
       {/* Export Actions */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Export Context</h3>
         <div className="flex gap-4">
           <Button className="bg-primary hover:bg-primary/90">

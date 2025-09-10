@@ -103,7 +103,7 @@ export const RoadmapSection = ({ ideaData }: RoadmapSectionProps) => {
     }
   };
 
-  const totalHours = roadmapData.phases.reduce((total, phase) => 
+  const totalHours = roadmapData.phases.reduce((total, phase) =>
     total + phase.tasks.reduce((phaseTotal, task) => phaseTotal + task.estimatedHours, 0), 0
   );
 
@@ -117,28 +117,28 @@ export const RoadmapSection = ({ ideaData }: RoadmapSectionProps) => {
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4 text-center">
+        <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4 text-center">
           <div className="text-2xl font-bold text-primary mb-1">{roadmapData.phases.length}</div>
           <div className="text-sm text-foreground/60">Phases</div>
         </Card>
-        <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4 text-center">
+        <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4 text-center">
           <div className="text-2xl font-bold text-primary mb-1">
             {roadmapData.phases.reduce((total, phase) => total + phase.tasks.length, 0)}
           </div>
           <div className="text-sm text-foreground/60">Tasks</div>
         </Card>
-        <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4 text-center">
+        <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4 text-center">
           <div className="text-2xl font-bold text-primary mb-1">{totalHours}h</div>
           <div className="text-sm text-foreground/60">Est. Hours</div>
         </Card>
-        <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4 text-center">
+        <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4 text-center">
           <div className="text-2xl font-bold text-primary mb-1">14</div>
           <div className="text-sm text-foreground/60">Weeks</div>
         </Card>
       </div>
 
       {/* Timeline */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Project Timeline</h3>
         <div className="space-y-2">
           {roadmapData.milestones.map((milestone, index) => (
@@ -160,7 +160,7 @@ export const RoadmapSection = ({ ideaData }: RoadmapSectionProps) => {
       {/* Detailed Phases */}
       <div className="space-y-6">
         {roadmapData.phases.map((phase) => (
-          <Card key={phase.id} className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+          <Card key={phase.id} className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-xl font-semibold text-white mb-2">{phase.name}</h3>
@@ -191,7 +191,7 @@ export const RoadmapSection = ({ ideaData }: RoadmapSectionProps) => {
                       </Badge>
                     </div>
                   </div>
-                  
+
                   <div className="mt-3">
                     <h5 className="text-sm font-medium text-white mb-1">AI Context:</h5>
                     <p className="text-sm text-foreground/70 bg-background/10 rounded p-2 font-mono">
@@ -217,7 +217,7 @@ export const RoadmapSection = ({ ideaData }: RoadmapSectionProps) => {
       </div>
 
       {/* Development Notes */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Development Notes</h3>
         <div className="space-y-4">
           <div className="bg-background/10 rounded-lg p-4">
@@ -236,7 +236,7 @@ export const RoadmapSection = ({ ideaData }: RoadmapSectionProps) => {
           <div className="bg-background/10 rounded-lg p-4">
             <h4 className="font-medium text-white mb-2">Flexibility & Iteration</h4>
             <p className="text-foreground/70 text-sm">
-              This roadmap is designed to be flexible. Tasks can be reordered based on priorities, 
+              This roadmap is designed to be flexible. Tasks can be reordered based on priorities,
               and new features can be added based on user feedback during development.
             </p>
           </div>
