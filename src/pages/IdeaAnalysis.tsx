@@ -16,6 +16,7 @@ import { TechStackSection } from "@/components/analysis/TechStackSection";
 import { CostAnalysisSection } from "@/components/analysis/CostAnalysisSection";
 import { RoadmapSection } from "@/components/analysis/RoadmapSection";
 import { AIContextSection } from "@/components/analysis/AIContextSection";
+import { TechStackQuestionnaire } from "@/components/analysis/TechStackQuestionnaire";
 import {
   TrendingUp,
   Users,
@@ -69,6 +70,9 @@ const IdeaAnalysis = () => {
   // Add states and generation function
   const [prdLoading, setPrdLoading] = useState(false);
   const [prdError, setPrdError] = useState<string | null>(null);
+  const [techStackLoading, setTechStackLoading] = useState(false);
+  const [techStackError, setTechStackError] = useState<string | null>(null);
+  const [isQuestionnaireOpen, setIsQuestionnaireOpen] = useState(false);
 
   // Check if we need to start analysis immediately
   const locationState = location.state as { pendingAnalysis?: boolean; ideaText?: string } | null;
@@ -161,6 +165,31 @@ const IdeaAnalysis = () => {
       setPrdError(err instanceof Error ? err.message : 'Failed to generate PRD');
     } finally {
       setPrdLoading(false);
+    }
+  };
+
+  const generateTechStack = async (answers: { stack: string; diagram: boolean }) => {
+    if (!ideaData?.idea.$id || techStackLoading) return;
+
+    setTechStackLoading(true);
+    setTechStackError(null);
+    setIsQuestionnaireOpen(false); // Close modal
+
+    try {
+      const response = await openRouterService.generateTechStack({
+        idea: ideaData.idea.description || '',
+        userChoices: answers,
+      });
+
+      if (response.success && response.data) {
+        await updateSection('tech-stack', response.data);
+      } else {
+        throw new Error('Tech Stack generation failed');
+      }
+    } catch (err) {
+      setTechStackError(err instanceof Error ? err.message : 'Failed to generate Tech Stack');
+    } finally {
+      setTechStackLoading(false);
     }
   };
 
@@ -455,6 +484,15 @@ const IdeaAnalysis = () => {
             {/* Tech Stack Tab */}
             <TabsContent value="tech-stack" className="mt-6">
               <TechStackSection ideaData={ideaData} />
+              <Button onClick={() => setIsQuestionnaireOpen(true)} disabled={techStackLoading}>
+                {techStackLoading ? 'Generating...' : 'Generate Tech Stack'}
+              </Button>
+              <TechStackQuestionnaire
+                isOpen={isQuestionnaireOpen}
+                onClose={() => setIsQuestionnaireOpen(false)}
+                onSubmit={generateTechStack}
+                loading={techStackLoading}
+              />
             </TabsContent>
 
             {/* Costs Tab */}

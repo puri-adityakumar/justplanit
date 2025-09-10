@@ -196,9 +196,6 @@ export class IdeaService {
 
     const rawAnalysis = response as unknown as IdeaAnalysisDocument;
 
-    // Note: Overview data is now stored directly via upsertSection calls from openrouter.ts
-    // No need to sync from request.result here as it's handled at the service level
-
     // Keep ideas.status in sync for dashboard cards
     try {
       if (request.status) {

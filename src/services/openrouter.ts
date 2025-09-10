@@ -3,6 +3,7 @@
 import { ValidationRequest, ValidationResponse, ValidationResult } from '@/types/validation';
 import { generateOverviewPrompt } from '@/lib/prompts/overview-prompt';
 import { generatePRDPrompt } from '@/lib/prompts/prd-prompt';
+import { generateTechStackPrompt } from '@/lib/prompts/tech-stack-prompt';
 
 // OpenRouter API configuration
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || 'sk-or-v1-your-key-here';
@@ -151,7 +152,10 @@ export class OpenRouterService {
         const startTime = Date.now();
 
         try {
-            const prompt = generateOverviewPrompt(request.idea, request.user_context);
+            const prompt = generateOverviewPrompt(
+                request.idea,
+                request.user_context ? JSON.stringify(request.user_context) : undefined
+            );
 
             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
@@ -245,6 +249,84 @@ export class OpenRouterService {
                 error: error instanceof Error ? error.message : 'Unknown error',
                 processing_time: Date.now() - startTime
             };
+        }
+    }
+
+    // New method for tech stack generation
+    async generateTechStack(request: { idea: string; userChoices: { stack: string; diagram: boolean } }): Promise<ValidationResponse> {
+        const startTime = Date.now();
+
+        try {
+            const prompt = generateTechStackPrompt(request.idea, request.userChoices.stack);
+
+            const requestBody = {
+                model: 'deepseek/deepseek-chat-v3.1:free',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are a tech architect. Respond with valid JSON only.'
+                    },
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                temperature: 0.3,
+                max_tokens: 1500,
+            };
+
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: openRouterConfig.headers,
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error('OpenRouter API error');
+            }
+
+            const data = await response.json();
+            const assistantMessage = data.choices[0]?.message?.content;
+
+            const cleanedResponse = this.cleanJsonResponse(assistantMessage);
+            const techStackResult = JSON.parse(cleanedResponse);
+
+            return {
+                success: true,
+                data: techStackResult,
+                processing_time: Date.now() - startTime
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
+                processing_time: Date.now() - startTime
+            };
+        }
+    }
+
+    // Add a new method for diagram generation
+    async generateMermaidDiagram(request: { stackName: string, idea: string }): Promise<ValidationResponse> {
+        const startTime = Date.now();
+        try {
+            const prompt = `Generate a Mermaid data flow diagram for a web application with the following tech stack: ${request.stackName}. The application is about: ${request.idea}. Keep it simple. Respond with ONLY the Mermaid code block.`;
+            const requestBody = {
+                model: 'deepseek/deepseek-chat-v3.1:free',
+                messages: [{ role: 'user', content: prompt }],
+            };
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: openRouterConfig.headers,
+                body: JSON.stringify(requestBody),
+            });
+            if (!response.ok) {
+                throw new Error('OpenRouter API error');
+            }
+            const data = await response.json();
+            const mermaidCode = this.cleanJsonResponse(data.choices[0]?.message?.content);
+            return { success: true, data: { mermaidCode }, processing_time: Date.now() - startTime };
+        } catch (error) {
+            return { success: false, error: error instanceof Error ? error.message : 'Unknown error', processing_time: Date.now() - startTime };
         }
     }
 
