@@ -61,6 +61,11 @@ const IdeaAnalysis = () => {
   const { idea: ideaData, loading, error, updateAnalysis, createIdeaWithSlug } = useIdeaBySlug(slug || '');
   const [currentStep, setCurrentStep] = useState(0);
 
+  // Add state variables for deduplication and rate limiting
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [lastAnalysisRequest, setLastAnalysisRequest] = useState<string | null>(null);
+  const [analysisStarted, setAnalysisStarted] = useState(false);
+
   // Check if we need to start analysis immediately
   const locationState = location.state as { pendingAnalysis?: boolean; ideaText?: string } | null;
   const shouldAnalyze = locationState?.pendingAnalysis && locationState?.ideaText;
@@ -71,7 +76,30 @@ const IdeaAnalysis = () => {
   }, []);
 
   const analyzeIdea = useCallback(async (ideaText: string) => {
+    // 🛡️ DEDUPLICATION CHECK #1: Prevent multiple simultaneous calls
+    if (isAnalyzing) {
+      console.log('Analysis already in progress, skipping duplicate request');
+      return;
+    }
+
+    // 🛡️ DEDUPLICATION CHECK #2: Prevent same idea being analyzed again
+    if (lastAnalysisRequest === ideaText) {
+      console.log('Same idea already analyzed, skipping duplicate request');
+      return;
+    }
+
+    // 🛡️ RATE LIMITING CHECK: Prevent requests too close together
+    const now = Date.now();
+    const lastRequestTime = parseInt(localStorage.getItem('lastAnalysisTime') || '0');
+    if (now - lastRequestTime < 5000) { // 5 second cooldown
+      console.log('Rate limit: Please wait 5 seconds before making another analysis request');
+      return;
+    }
+
+    setIsAnalyzing(true);
     setCurrentStep(0);
+    setLastAnalysisRequest(ideaText);
+    localStorage.setItem('lastAnalysisTime', now.toString());
 
     try {
       // Update status to analyzing first 
@@ -81,8 +109,8 @@ const IdeaAnalysis = () => {
 
       // Use the faster overview prompt instead of the full validation
       const overviewPrompt = generateOverviewPrompt(ideaText);
-      
-      const response = await openRouterService.analyzeIdea({ 
+
+      const response = await openRouterService.analyzeIdea({
         idea: ideaText,
         prompt: overviewPrompt  // Pass custom prompt
       });
@@ -105,21 +133,34 @@ const IdeaAnalysis = () => {
         status: 'failed',
         error: errorMessage
       });
+    } finally {
+      setIsAnalyzing(false); // Always reset the flag
     }
-  }, [updateAnalysis]);
+  }, [updateAnalysis, isAnalyzing, lastAnalysisRequest]);
 
   useEffect(() => {
-    // Auto-start analysis if we have pending analysis from navigation
-    if (shouldAnalyze && ideaData?.idea) {
+    // 🛡️ SINGLE TRIGGER LOGIC: Only one path should execute
+
+    // PRIORITY 1: Auto-start analysis from navigation (highest priority)
+    if (shouldAnalyze && ideaData?.idea && !analysisStarted) {
+      console.log('🚀 Trigger 1: Starting analysis from navigation');
+      setAnalysisStarted(true);
       analyzeIdea(locationState.ideaText);
       return;
     }
 
-    // Legacy flow - handle idea from query params
-    if (ideaData && ideaData.analysis?.status === 'analyzing' && idea) {
+    // PRIORITY 2: Resume analysis if it was already in progress
+    if (ideaData && ideaData.analysis?.status === 'analyzing' && idea && !analysisStarted) {
+      console.log('🚀 Trigger 2: Resuming analysis from query params');
+      setAnalysisStarted(true);
       analyzeIdea(idea);
-    } else if (!ideaData && slug && idea && user) {
-      // Create new idea if needed
+      return;
+    }
+
+    // PRIORITY 3: Create new idea and start analysis (lowest priority)
+    if (!ideaData && slug && idea && user && !analysisStarted) {
+      console.log('🚀 Trigger 3: Creating new idea and starting analysis');
+      setAnalysisStarted(true);
       const title = idea.length > 50 ? idea.substring(0, 50) + '...' : idea;
       createIdeaWithSlug(title, idea, user.$id, user.name || user.email)
         .then(() => {
@@ -128,9 +169,17 @@ const IdeaAnalysis = () => {
         })
         .catch(err => {
           console.error('Failed to create idea:', err);
+          setAnalysisStarted(false); // Reset on error
         });
+      return;
     }
-  }, [ideaData, slug, idea, user, analyzeIdea, createIdeaWithSlug]);
+  }, [ideaData, slug, idea, user, analyzeIdea, createIdeaWithSlug, shouldAnalyze, locationState, analysisStarted]);
+
+  // Reset analysis started flag when idea changes
+  useEffect(() => {
+    setAnalysisStarted(false);
+    setLastAnalysisRequest(null);
+  }, [slug]);
 
   useEffect(() => {
     if (ideaData?.idea.title) {
@@ -162,7 +211,7 @@ const IdeaAnalysis = () => {
 
   if (loading || ideaData?.analysis?.status === 'analyzing') {
     return (
-      <AnalysisLoading 
+      <AnalysisLoading
         ideaDescription={ideaData?.idea.description || idea || ''}
         currentStep={currentStep}
         progress={(currentStep / analysisSteps.length) * 100}
@@ -173,7 +222,7 @@ const IdeaAnalysis = () => {
 
   if (error || ideaData?.analysis?.status === 'failed') {
     return (
-      <AnalysisError 
+      <AnalysisError
         error={error || ideaData?.analysis?.error}
         onRetry={() => ideaData && analyzeIdea(ideaData.idea.description || '')}
       />
@@ -192,7 +241,7 @@ const IdeaAnalysis = () => {
 
       <div className="relative z-10 px-6 py-8">
         <div className="max-w-7xl mx-auto">
-          <AnalysisHeader 
+          <AnalysisHeader
             title={ideaData.idea.title || 'Untitled Idea'}
             description={ideaData.idea.description || ''}
           />
@@ -372,7 +421,7 @@ const IdeaAnalysis = () => {
                   <TrendingUp className="h-6 w-6 text-primary" />
                   <h2 className="text-2xl font-bold text-white">Detailed Market Analysis</h2>
                 </div>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-4">Target Market</h3>

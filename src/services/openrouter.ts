@@ -35,6 +35,10 @@ export class OpenRouterService {
             console.log('Starting validation analysis for:', request.idea);
             console.log('Using API key:', OPENROUTER_API_KEY ? 'Present' : 'Missing');
 
+            // Detect prompt type for appropriate validation
+            const promptType = this.detectPromptType(request);
+            console.log('Detected prompt type:', promptType);
+
             // Use custom prompt if provided, otherwise use default validation prompt
             const prompt = request.prompt || generateValidationPrompt(request.idea, request.user_context);
 
@@ -81,14 +85,14 @@ export class OpenRouterService {
             }
 
             // Parse the JSON response
-            let analysisResult: ValidationResult;
+            let analysisResult: any; // Changed from ValidationResult to any for flexibility
             try {
                 // Clean the response to ensure it's valid JSON
                 const cleanedResponse = this.cleanJsonResponse(assistantMessage);
                 analysisResult = JSON.parse(cleanedResponse);
 
-                // Transform financial projections to numbers if they're in millions
-                if (analysisResult.financial_projections) {
+                // Only apply financial transformations for full analysis
+                if (promptType === 'full_analysis' && analysisResult.financial_projections) {
                     const projections = analysisResult.financial_projections.projections;
                     if (typeof projections.year1 === 'number' && projections.year1 < 1000) {
                         // Convert millions to actual numbers
@@ -112,9 +116,14 @@ export class OpenRouterService {
             // Add processing metadata
             const processingTime = Date.now() - startTime;
 
-            // Validate the structure
-            if (!this.validateAnalysisStructure(analysisResult)) {
-                throw new Error('Analysis result missing required fields');
+            // Validate the structure based on detected prompt type
+            if (!this.validateAnalysisStructure(analysisResult, promptType)) {
+                throw new Error(`Analysis result missing required fields for ${promptType} format`);
+            }
+
+            // Transform overview data to match UI expectations
+            if (promptType === 'overview') {
+                analysisResult = this.transformOverviewToValidationResult(analysisResult);
             }
 
             console.log('Validation analysis completed in', processingTime, 'ms');
@@ -203,20 +212,209 @@ export class OpenRouterService {
         return cleaned;
     }
 
-    // Validate that the analysis result has all required fields
-    private validateAnalysisStructure(result: any): boolean {
-        const requiredFields = [
-            'executive_summary',
-            'market_analysis',
-            'competitive_analysis',
-            'technical_feasibility',
-            'risk_assessment',
-            'financial_projections',
-            'implementation_roadmap',
-            'recommendations'
-        ];
+    // Define validation rules for different prompt types
+    private getValidationRules(promptType: string) {
+        switch (promptType) {
+            case 'overview':
+                return {
+                    requiredFields: ['overview', 'confidence', 'next_steps'],
+                    nestedValidation: {
+                        overview: ['title', 'viability_score', 'verdict', 'one_liner', 'target_audience', 'market_size', 'key_strengths', 'key_challenges']
+                    }
+                };
 
-        return requiredFields.every(field => result && result[field]);
+            case 'full_analysis':
+                return {
+                    requiredFields: [
+                        'executive_summary',
+                        'market_analysis',
+                        'competitive_analysis',
+                        'technical_feasibility',
+                        'risk_assessment',
+                        'financial_projections',
+                        'implementation_roadmap',
+                        'recommendations'
+                    ],
+                    nestedValidation: {}
+                };
+
+            // Future prompt types can be added here
+            case 'technical_deep_dive':
+                return {
+                    requiredFields: ['technical_analysis', 'architecture', 'implementation'],
+                    nestedValidation: {}
+                };
+
+            default:
+                // Fallback to overview for unknown types
+                return this.getValidationRules('overview');
+        }
+    }
+
+    // Detect prompt type from the request
+    private detectPromptType(request: ValidationRequest & { prompt?: string }): string {
+        if (!request.prompt) {
+            return 'full_analysis'; // Default when no custom prompt
+        }
+
+        // Check for overview prompt indicators
+        if (request.prompt.includes('"overview"') || request.prompt.includes('quick overview validation')) {
+            return 'overview';
+        }
+
+        // Check for full analysis prompt indicators  
+        if (request.prompt.includes('"executive_summary"') || request.prompt.includes('comprehensive validation report')) {
+            return 'full_analysis';
+        }
+
+        // Add more detection logic for future prompts
+        // if (request.prompt.includes('technical deep dive')) return 'technical_deep_dive';
+
+        return 'overview'; // Default to overview for unknown custom prompts
+    }
+
+    // Updated validation method
+    private validateAnalysisStructure(result: any, promptType: string): boolean {
+        const rules = this.getValidationRules(promptType);
+
+        // Check top-level required fields
+        const hasRequiredFields = rules.requiredFields.every(field => {
+            const hasField = result && result[field] !== undefined && result[field] !== null;
+            if (!hasField) {
+                console.error(`Missing required field: ${field}`);
+            }
+            return hasField;
+        });
+
+        if (!hasRequiredFields) {
+            return false;
+        }
+
+        // Check nested required fields
+        for (const [parentField, nestedFields] of Object.entries(rules.nestedValidation)) {
+            if (result[parentField] && Array.isArray(nestedFields)) {
+                const hasNestedFields = nestedFields.every(nestedField => {
+                    const hasField = result[parentField][nestedField] !== undefined;
+                    if (!hasField) {
+                        console.error(`Missing nested field: ${parentField}.${nestedField}`);
+                    }
+                    return hasField;
+                });
+
+                if (!hasNestedFields) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // Transform overview response to match UI's expected ValidationResult format
+    private transformOverviewToValidationResult(overviewResult: any): any {
+        console.log('Transforming overview result to ValidationResult format');
+
+        const overview = overviewResult.overview;
+
+        return {
+            executive_summary: {
+                viability_score: overview.viability_score || 5,
+                verdict: overview.verdict || 'CONDITIONAL',
+                key_strengths: overview.key_strengths || [],
+                key_weaknesses: overview.key_challenges || [], // Map key_challenges to key_weaknesses
+                market_opportunity: overview.market_size || 'Not specified',
+                time_to_market: overview.time_to_market || 'Not specified'
+            },
+            market_analysis: {
+                target_market: {
+                    demographics: overview.target_audience || 'Not specified',
+                    size: 0, // Not provided in overview
+                    growth_rate: this.extractGrowthRate(overview.market_size) || 0
+                },
+                market_size: {
+                    tam: overview.market_size || 'Not specified',
+                    sam: 'Not analyzed in overview',
+                    som: 'Not analyzed in overview'
+                },
+                trends: [],
+                market_readiness: overview.viability_score || 5,
+                recent_developments: []
+            },
+            competitive_analysis: {
+                competitors: [],
+                competitive_advantages: [],
+                threats_level: 'MEDIUM',
+                market_position: overview.competitive_landscape || 'Not analyzed',
+                funding_landscape: 'Not analyzed in overview'
+            },
+            technical_feasibility: {
+                complexity_rating: 5,
+                required_technologies: [],
+                resource_requirements: {
+                    team_size: 0,
+                    timeline: overview.time_to_market || 'Not specified',
+                    budget_range: 'Not analyzed in overview'
+                },
+                technical_risks: []
+            },
+            risk_assessment: {
+                overall_risk_level: 'MEDIUM',
+                risks: [],
+                risk_score: 50,
+                regulatory_considerations: []
+            },
+            financial_projections: {
+                revenue_model: overview.monetization_potential || 'Not specified',
+                projections: {
+                    year1: 0,
+                    year3: 0,
+                    year5: 0
+                },
+                cost_structure: [],
+                break_even_point: 'Not analyzed in overview',
+                funding_required: 0,
+                roi: 0,
+                funding_environment: 'Not analyzed in overview'
+            },
+            implementation_roadmap: {
+                phases: [],
+                critical_path: [],
+                success_metrics: [],
+                next_steps: overviewResult.next_steps || []
+            },
+            recommendations: {
+                decision: overview.verdict || 'CONDITIONAL',
+                confidence: overviewResult.confidence || 5,
+                priority_actions: overviewResult.next_steps?.slice(0, 3) || [],
+                alternative_approaches: [],
+                success_probability: overview.viability_score * 10 || 50,
+                key_success_factors: overview.key_strengths || [],
+                market_timing: overview.quick_recommendation || 'Not specified'
+            },
+            sources: {
+                sources: [],
+                search_quality: 5,
+                last_updated: new Date().toISOString()
+            }
+        };
+    }
+
+    // Helper function to extract growth rate from market size description
+    private extractGrowthRate(marketSize: string): number {
+        if (!marketSize) return 0;
+
+        // Try to extract percentage from text like "Growing at 15% annually"
+        const growthMatch = marketSize.match(/(\d+)%/);
+        if (growthMatch) {
+            return parseInt(growthMatch[1]);
+        }
+
+        // Default growth rates based on market size description
+        if (marketSize.toLowerCase().includes('large')) return 8;
+        if (marketSize.toLowerCase().includes('medium')) return 5;
+        if (marketSize.toLowerCase().includes('small')) return 3;
+
+        return 0;
     }
 
     // This method has been removed - we only use real API calls now
