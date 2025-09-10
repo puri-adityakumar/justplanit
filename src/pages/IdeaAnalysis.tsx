@@ -182,7 +182,7 @@ const IdeaAnalysis = () => {
       });
 
       if (response.success && response.data) {
-        await updateSection('tech-stack', response.data);
+        await updateSection('tech_stack', response.data);
       } else {
         throw new Error('Tech Stack generation failed');
       }

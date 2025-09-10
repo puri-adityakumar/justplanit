@@ -4,30 +4,36 @@ import { Badge } from "@/components/ui/badge";
 import { Layers, Database, Globe, Smartphone, Cloud, Code } from "lucide-react";
 import { CompleteIdea } from "@/types/database";
 import mermaid from 'mermaid';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface TechStackSectionProps {
   ideaData: CompleteIdea;
-  techStackData?: {
-    suggested_stacks: Array<{
-      name: string;
-      description: string;
-      frontend: string;
-      backend: string;
-      database: string;
-      other_tools: string[];
-      pros: string[];
-      cons: string[];
-      complexity: string;
-    }>;
-  };
-  onGenerateDiagram: (stackName: string) => void;
-  showDiagram: boolean;
-  setShowDiagram: (show: boolean) => void;
+  // Remove other props
 }
 
-export const TechStackSection = ({ ideaData, techStackData, onGenerateDiagram, showDiagram, setShowDiagram }: TechStackSectionProps) => {
-  const data = techStackData || { suggested_stacks: [] };
+interface TechStackData {
+  suggested_stacks: Array<{
+    name: string;
+    description: string;
+    frontend: string;
+    backend: string;
+    database: string;
+    other_tools: string[];
+    pros: string[];
+    cons: string[];
+    complexity: string;
+  }>;
+}
+
+export const TechStackSection = ({ ideaData }: TechStackSectionProps) => {
+  const [showDiagram, setShowDiagram] = useState(false);
+
+  const onGenerateDiagram = (stackName: string) => {
+    // TODO: Generate diagram based on stackName
+    setShowDiagram(true);
+  };
+
+  const data: TechStackData = (ideaData.sections?.tech_stack as TechStackData) ?? { suggested_stacks: [] };
 
   // Placeholder for diagram code
   const diagramCode = `graph TD
