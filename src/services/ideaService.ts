@@ -114,15 +114,36 @@ export class IdeaService {
       [Query.equal('idea_id', ideaId)]
     );
 
-    // Parse sections into object
+    // Parse sections into object (with inference if section_type is missing)
     const sections: Partial<Record<SectionType, unknown>> = {};
     sectionsResponse.documents.forEach((doc) => {
       const sectionDoc = doc as unknown as IdeaDataSectionDocument;
       try {
-        sections[sectionDoc.section_type] = JSON.parse(sectionDoc.data);
+        const parsed: any = JSON.parse(sectionDoc.data);
+
+        // Infer section type when null or invalid
+        let inferredType: SectionType | null = (sectionDoc as any).section_type || null;
+        if (!inferredType) {
+          if (parsed && typeof parsed === 'object') {
+            if (parsed.suggested_stacks) {
+              inferredType = 'tech_stack';
+            } else if (parsed.user_personas || parsed.user_stories) {
+              inferredType = 'prd';
+            } else if (parsed.executive_summary) {
+              inferredType = 'overview';
+            } else if (parsed.market_analysis && !parsed.executive_summary) {
+              inferredType = 'market';
+            } else {
+              inferredType = 'overview';
+            }
+          } else {
+            inferredType = 'overview';
+          }
+        }
+
+        sections[inferredType] = parsed;
       } catch (error) {
-        console.error(`Failed to parse section ${sectionDoc.section_type}:`, error);
-        sections[sectionDoc.section_type] = null;
+        console.error(`Failed to parse section ${sectionDoc && (sectionDoc as any).section_type}:`, error);
       }
     });
 

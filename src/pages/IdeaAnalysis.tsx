@@ -13,9 +13,9 @@ import { AnalysisError } from "@/components/analysis/AnalysisError";
 import { IdeaLoading } from "@/components/analysis/IdeaLoading";
 import { PRDSection } from "@/components/analysis/PRDSection";
 import { TechStackSection } from "@/components/analysis/TechStackSection";
-import { RoadmapSection } from "@/components/analysis/RoadmapSection";
+import { MarketAnalysisSection } from "@/components/analysis/MarketAnalysisSection";
 import { AIContextSection } from "@/components/analysis/AIContextSection";
-import { TechStackQuestionnaire } from "@/components/analysis/TechStackQuestionnaire";
+import { TechStackQuestionnaire } from "../components/analysis/TechStackQuestionnaire";
 import {
   TrendingUp,
   Users,
@@ -33,7 +33,7 @@ import {
   Palette,
   Map
 } from "lucide-react";
-import { ValidationResult, OverviewResult } from "@/types/validation";
+import { ValidationResult } from "@/types/validation";
 import { useIdeaBySlug } from "@/hooks/use-ideas";
 import { useAuth } from "@/hooks/use-auth";
 import type { CompleteIdea } from "@/types/database";
@@ -72,6 +72,8 @@ const IdeaAnalysis = () => {
   const [techStackLoading, setTechStackLoading] = useState(false);
   const [techStackError, setTechStackError] = useState<string | null>(null);
   const [isQuestionnaireOpen, setIsQuestionnaireOpen] = useState(false);
+  const [marketLoading, setMarketLoading] = useState(false);
+  const [marketError, setMarketError] = useState<string | null>(null);
 
   // Check if we need to start analysis immediately
   const locationState = location.state as { pendingAnalysis?: boolean; ideaText?: string } | null;
@@ -156,7 +158,7 @@ const IdeaAnalysis = () => {
       const response = await openRouterService.generatePRD({ idea: ideaData.idea.description || '' });
 
       if (response.success && response.data) {
-        await updateSection('prd', response.data);
+        await updateSection('prd', response.data as unknown as Record<string, unknown>);
       } else {
         throw new Error('PRD generation failed');
       }
@@ -181,7 +183,7 @@ const IdeaAnalysis = () => {
       });
 
       if (response.success && response.data) {
-        await updateSection('tech_stack', response.data);
+        await updateSection('tech_stack', response.data as unknown as Record<string, unknown>);
       } else {
         throw new Error('Tech Stack generation failed');
       }
@@ -189,6 +191,29 @@ const IdeaAnalysis = () => {
       setTechStackError(err instanceof Error ? err.message : 'Failed to generate Tech Stack');
     } finally {
       setTechStackLoading(false);
+    }
+  };
+
+  const generateMarket = async () => {
+    if (!ideaData?.idea.$id || marketLoading) return;
+
+    setMarketLoading(true);
+    setMarketError(null);
+
+    try {
+      const response = await openRouterService.generateMarketAnalysis({
+        idea: ideaData.idea.description || ''
+      });
+
+      if (response.success && response.data) {
+        await updateSection('market', response.data as unknown as Record<string, unknown>);
+      } else {
+        throw new Error('Market analysis generation failed');
+      }
+    } catch (err) {
+      setMarketError(err instanceof Error ? err.message : 'Failed to generate market analysis');
+    } finally {
+      setMarketLoading(false);
     }
   };
 
@@ -294,6 +319,9 @@ const IdeaAnalysis = () => {
   if (!validationData || !ideaData) {
     return null;
   }
+
+  // Prefer saved market section data if available
+  const marketData = ideaData.sections?.market as unknown as Pick<ValidationResult, 'market_analysis' | 'competitive_analysis' | 'risk_assessment' | 'sources'> | undefined;
 
   return (
     <div className="min-h-screen bg-black relative">
@@ -466,7 +494,7 @@ const IdeaAnalysis = () => {
             {/* PRD Tab */}
             <TabsContent value="prd" className="mt-6">
               {ideaData.sections?.prd ? (
-                <PRDSection ideaData={ideaData} validationData={validationData} prdData={ideaData.sections.prd} />
+                <PRDSection ideaData={ideaData} validationData={validationData} prdData={ideaData.sections.prd as any} />
               ) : (
                 <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-8 text-center">
                   <FileText className="h-12 w-12 text-primary mx-auto mb-4" />
@@ -530,48 +558,15 @@ const IdeaAnalysis = () => {
               </Card>
             </TabsContent>
 
-            {/* Market Tab - Overview Market Analysis */}
+            {/* Market Tab - Componentized */}
             <TabsContent value="market" className="mt-6">
-              <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <TrendingUp className="h-6 w-6 text-primary" />
-                  <h2 className="text-2xl font-bold text-white">Market Analysis Overview</h2>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Target Market</h3>
-                    <div className="text-foreground/80 space-y-2">
-                      <p><strong>Audience:</strong> {validationData?.market_analysis?.target_market?.demographics ?? 'N/A'}</p>
-                      <p><strong>Growth Rate:</strong> {validationData?.market_analysis?.target_market?.growth_rate ?? 'N/A'}%</p>
-                      <p><strong>Size:</strong> {validationData?.market_analysis?.target_market?.size ?? 'N/A'}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Market Size</h3>
-                    <div className="text-foreground/80 space-y-2">
-                      <p><strong>TAM:</strong> {validationData?.market_analysis?.market_size?.tam ?? 'N/A'}</p>
-                      <p><strong>SAM:</strong> {validationData?.market_analysis?.market_size?.sam ?? 'N/A'}</p>
-                      <p><strong>SOM:</strong> {validationData?.market_analysis?.market_size?.som ?? 'N/A'}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Trends</h3>
-                    <ul className="list-disc pl-5 space-y-2 text-foreground/80">
-                      {validationData?.market_analysis?.trends?.map((trend, index) => (
-                        <li key={index}>{trend.trend} (Impact: {trend.impact})</li>
-                      )) ?? <li>N/A</li>}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Market Readiness</h3>
-                    <p className="text-foreground/80">{validationData?.market_analysis?.market_readiness ?? 'N/A'}/10</p>
-                  </div>
-                </div>
-              </Card>
+              <MarketAnalysisSection
+                ideaData={ideaData}
+                marketData={marketData}
+                onGenerate={generateMarket}
+                loading={marketLoading}
+                error={marketError}
+              />
             </TabsContent>
 
             {/* AI Context Tab */}

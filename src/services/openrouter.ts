@@ -2,8 +2,9 @@
 
 import { ValidationRequest, ValidationResponse, ValidationResult } from '@/types/validation';
 import { generateOverviewPrompt } from '@/lib/prompts/overview-prompt';
+import { generateMarketPrompt } from '@/lib/prompts/market-prompt';
 import { generatePRDPrompt } from '@/lib/prompts/prd-prompt';
-import { generateTechStackPrompt } from '@/lib/prompts/tech-stack-prompt';
+import { generateTechStackPrompt } from '../lib/prompts/tech-stack-prompt';
 
 // OpenRouter API configuration
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || 'sk-or-v1-your-key-here';
@@ -324,7 +325,41 @@ export class OpenRouterService {
             }
             const data = await response.json();
             const mermaidCode = this.cleanJsonResponse(data.choices[0]?.message?.content);
-            return { success: true, data: { mermaidCode }, processing_time: Date.now() - startTime };
+            return { success: true, data: { mermaidCode } as unknown as ValidationResult, processing_time: Date.now() - startTime };
+        } catch (error) {
+            return { success: false, error: error instanceof Error ? error.message : 'Unknown error', processing_time: Date.now() - startTime };
+        }
+    }
+
+    // New method: Market analysis generation
+    async generateMarketAnalysis(request: { idea: string; context?: { region?: string; industry?: string } }): Promise<ValidationResponse> {
+        const startTime = Date.now();
+        try {
+            const prompt = generateMarketPrompt(request.idea, request.context);
+            const requestBody = {
+                model: 'deepseek/deepseek-chat-v3.1:free',
+                messages: [
+                    { role: 'system', content: 'You are a market analyst. Respond with valid JSON only.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.3,
+                max_tokens: 6000
+            };
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: openRouterConfig.headers,
+                body: JSON.stringify(requestBody)
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`OpenRouter API error: ${response.status} ${response.statusText} - ${errorText}`);
+            }
+            const data = await response.json();
+            const assistantMessage = data.choices[0]?.message?.content;
+            if (!assistantMessage) throw new Error('No response from AI model');
+            const cleaned = this.cleanJsonResponse(assistantMessage);
+            const marketResult = JSON.parse(cleaned);
+            return { success: true, data: marketResult, processing_time: Date.now() - startTime };
         } catch (error) {
             return { success: false, error: error instanceof Error ? error.message : 'Unknown error', processing_time: Date.now() - startTime };
         }

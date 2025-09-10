@@ -27,6 +27,7 @@ export type SectionType =
   | 'prd'
   | 'tech_stack'
   | 'cost_analysis'
+  | 'market'
   | 'roadmap'
   | 'design_system'
   | 'workflows'
