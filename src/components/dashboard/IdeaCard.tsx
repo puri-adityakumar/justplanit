@@ -80,7 +80,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
       <div className="flex items-center justify-between mb-4">
         {getStatusBadge()}
         <span className="text-xs text-foreground/50">
-          {formatDate(idea.created_at)}
+          {formatDate(idea.$createdAt)}
         </span>
       </div>
 

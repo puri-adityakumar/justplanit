@@ -27,7 +27,6 @@ export class IdeaService {
   // Create a new idea
   static async createIdea(request: CreateIdeaRequest): Promise<IdeaDocument> {
     const slug = await this.generateUniqueSlug();
-    const now = new Date().toISOString();
 
     const ideaData = {
       user_id: request.user_id,
@@ -36,9 +35,8 @@ export class IdeaService {
       description: request.description || null,
       slug,
       status: 'analyzing' as const,
-      is_public: false,
-      created_at: now,
-      updated_at: now
+      is_public: false
+      // Appwrite automatically adds $createdAt and $updatedAt
     };
 
     const response = await databases.createDocument(
@@ -104,7 +102,7 @@ export class IdeaService {
           error: rawAnalysis.error,
           completed_at: rawAnalysis.completed_at,
           created_at: rawAnalysis.$createdAt,
-          updated_at: rawAnalysis.updated_at
+          updated_at: rawAnalysis.$updatedAt
         };
       }
     } catch (error) {
@@ -144,32 +142,25 @@ export class IdeaService {
       this.collections.IDEAS,
       [
         Query.equal('user_id', userId),
-        Query.orderDesc('created_at')
+        Query.orderDesc('$createdAt')
       ]
     );
     return response.documents as unknown as IdeaDocument[];
   }
 
   // Update idea
-  static async updateIdea(ideaId: string, updates: Partial<IdeaDocument>): Promise<IdeaDocument> {
-    const updateData = {
-      ...updates,
-      updated_at: new Date().toISOString()
-    };
-
+  static async updateIdea(ideaId: string, updates: Partial<Omit<IdeaDocument, '$createdAt' | '$updatedAt'>>): Promise<IdeaDocument> {
     const response = await databases.updateDocument(
       this.db,
       this.collections.IDEAS,
       ideaId,
-      updateData
+      updates
     );
     return response as unknown as IdeaDocument;
   }
 
   // Create or update analysis
   static async upsertAnalysis(request: UpdateIdeaAnalysisRequest): Promise<CompleteIdea['analysis']> {
-    const now = new Date().toISOString();
-
     // Check if analysis exists
     const existingResponse = await databases.listDocuments(
       this.db,
@@ -184,8 +175,8 @@ export class IdeaService {
       market_size: request.market_size || null,
       result: request.result ? JSON.stringify(request.result) : null,
       error: request.error || null,
-      completed_at: request.completed_at || null,
-      updated_at: now
+      completed_at: request.completed_at || null
+      // Appwrite automatically manages $createdAt and $updatedAt
     };
 
     let response: Models.Document;
@@ -220,14 +211,12 @@ export class IdeaService {
       error: rawAnalysis.error,
       completed_at: rawAnalysis.completed_at,
       created_at: rawAnalysis.$createdAt,
-      updated_at: rawAnalysis.updated_at
+      updated_at: rawAnalysis.$updatedAt
     };
   }
 
   // Create or update section data
   static async upsertSection(request: CreateSectionRequest): Promise<IdeaDataSectionDocument> {
-    const now = new Date().toISOString();
-
     // Check if section exists
     const existingResponse = await databases.listDocuments(
       this.db,
@@ -241,8 +230,8 @@ export class IdeaService {
     const sectionData = {
       idea_id: request.idea_id,
       section_type: request.section_type,
-      data: JSON.stringify(request.data),
-      updated_at: now
+      data: JSON.stringify(request.data)
+      // Appwrite automatically manages $createdAt and $updatedAt
     };
 
     if (existingResponse.documents.length > 0) {
@@ -260,7 +249,7 @@ export class IdeaService {
         this.db,
         this.collections.IDEA_DATA_SECTIONS,
         ID.unique(),
-        { ...sectionData, created_at: now }
+        sectionData
       );
       return response as unknown as IdeaDataSectionDocument;
     }
@@ -313,7 +302,7 @@ export class IdeaService {
       this.collections.IDEAS,
       [
         Query.equal('status', status),
-        Query.orderDesc('created_at')
+        Query.orderDesc('$createdAt')
       ]
     );
     return response.documents as unknown as IdeaDocument[];
@@ -327,7 +316,7 @@ export class IdeaService {
       [
         Query.equal('is_public', true),
         Query.equal('status', 'completed'),
-        Query.orderDesc('created_at')
+        Query.orderDesc('$createdAt')
       ]
     );
     return response.documents as unknown as IdeaDocument[];

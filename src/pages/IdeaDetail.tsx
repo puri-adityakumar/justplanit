@@ -149,11 +149,11 @@ const IdeaDetail = () => {
                         <div className="flex items-center gap-4 mb-4">
                             {getStatusBadge()}
                             <span className="text-foreground/60">
-                                Created {formatDate(idea.idea.created_at)}
+                                Created {formatDate(idea.idea.$createdAt)}
                             </span>
-                            {idea.idea.updated_at !== idea.idea.created_at && (
+                            {idea.idea.$updatedAt !== idea.idea.$createdAt && (
                                 <span className="text-foreground/60">
-                                    • Updated {formatDate(idea.idea.updated_at)}
+                                    • Updated {formatDate(idea.idea.$updatedAt)}
                                 </span>
                             )}
                         </div>

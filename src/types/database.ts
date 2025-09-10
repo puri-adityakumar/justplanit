@@ -10,8 +10,7 @@ export interface IdeaDocument extends Models.Document {
   slug?: number;
   status: 'analyzing' | 'completed' | 'failed';
   is_public: boolean;
-  created_at: string;
-  updated_at: string;
+  // Inherits $createdAt, $updatedAt, $id, $collectionId, $databaseId, $permissions from Models.Document
 }
 
 export interface IdeaAnalysisDocument extends Models.Document {
@@ -22,8 +21,7 @@ export interface IdeaAnalysisDocument extends Models.Document {
   result?: string; // JSON string of ValidationResult
   error?: string;
   completed_at?: string;
-  created_at: string;
-  updated_at: string;
+  // Inherits $createdAt, $updatedAt, $id, $collectionId, $databaseId, $permissions from Models.Document
 }
 
 export type SectionType = 
@@ -40,8 +38,7 @@ export interface IdeaDataSectionDocument extends Models.Document {
   idea_id: string;
   section_type: SectionType;
   data: string; // JSON string
-  created_at: string;
-  updated_at: string;
+  // Inherits $createdAt, $updatedAt, $id, $collectionId, $databaseId, $permissions from Models.Document
 }
 
 // Complete idea with all related data
@@ -56,8 +53,8 @@ export interface CompleteIdea {
     result?: Record<string, unknown>; // Parsed ValidationResult
     error?: string;
     completed_at?: string;
-    created_at: string;
-    updated_at: string;
+    created_at: string;  // Maps to $createdAt
+    updated_at: string;  // Maps to $updatedAt
   };
   sections: Partial<Record<SectionType, unknown>>; // Parsed JSON data
 }

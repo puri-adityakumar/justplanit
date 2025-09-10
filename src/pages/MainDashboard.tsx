@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useIdeas } from "@/hooks/use-ideas";
 import { IdeaDocument } from "@/types/database";
 import { openRouterService } from "@/services/openrouter";
+import { generateOverviewPrompt } from "@/lib/prompts/overview-prompt";
 
 const MainDashboard = () => {
   const navigate = useNavigate();
@@ -30,37 +31,26 @@ const MainDashboard = () => {
     setAnalysisError(null);
     
     try {
-      // Step 1: Create idea in database
+      // Create idea in database and redirect immediately - much faster UX
       const newIdea = await createIdea({
-        title: idea.substring(0, 100), // First 100 chars as title
+        title: idea.substring(0, 100), 
         description: idea
       });
 
-      // Step 2: Analyze the idea
-      const response = await openRouterService.analyzeIdea({ idea });
+      // Redirect immediately to analysis page - user sees progress instead of waiting
+      navigate(`/dashboard/${newIdea.slug}`, { 
+        state: { 
+          pendingAnalysis: true,
+          ideaText: idea 
+        } 
+      });
 
-      if (response.success && response.data) {
-        // Step 3: Update idea status to completed
-        await updateIdea(newIdea.$id, { 
-          status: 'completed'
-        });
-
-        // Step 4: Redirect to analysis page with slug
-        navigate(`/dashboard/${newIdea.slug}`);
-      } else {
-        // Update idea status to failed
-        await updateIdea(newIdea.$id, { 
-          status: 'failed'
-        });
-        setAnalysisError(response.error || 'Failed to analyze idea');
-      }
     } catch (err) {
-      console.error('Error in handleIdeaSubmit:', err);
-      setAnalysisError(err instanceof Error ? err.message : 'An unexpected error occurred');
-    } finally {
+      console.error('Error creating idea:', err);
+      setAnalysisError(err instanceof Error ? err.message : 'Failed to create idea');
       setIsAnalyzing(false);
     }
-  }, [user, createIdea, updateIdea, navigate]);
+  }, [user, createIdea, navigate]);
 
   useEffect(() => {
     document.documentElement.classList.add('dark');

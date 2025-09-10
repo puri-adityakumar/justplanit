@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useSearchParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { GradientBars } from "@/components/ui/bg-bars";
 import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
@@ -39,6 +39,7 @@ import { useIdeaBySlug } from "@/hooks/use-ideas";
 import { useAuth } from "@/hooks/use-auth";
 import type { CompleteIdea } from "@/types/database";
 import { openRouterService } from "@/services/openrouter";
+import { generateOverviewPrompt } from "@/lib/prompts/overview-prompt";
 
 // Analysis steps for the loading animation
 const analysisSteps = [
@@ -53,11 +54,16 @@ const IdeaAnalysis = () => {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const idea = searchParams.get('idea');
   const { user } = useAuth();
 
   const { idea: ideaData, loading, error, updateAnalysis, createIdeaWithSlug } = useIdeaBySlug(slug || '');
   const [currentStep, setCurrentStep] = useState(0);
+
+  // Check if we need to start analysis immediately
+  const locationState = location.state as { pendingAnalysis?: boolean; ideaText?: string } | null;
+  const shouldAnalyze = locationState?.pendingAnalysis && locationState?.ideaText;
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -68,7 +74,18 @@ const IdeaAnalysis = () => {
     setCurrentStep(0);
 
     try {
-      const response = await openRouterService.analyzeIdea({ idea: ideaText });
+      // Update status to analyzing first 
+      await updateAnalysis({
+        status: 'analyzing'
+      });
+
+      // Use the faster overview prompt instead of the full validation
+      const overviewPrompt = generateOverviewPrompt(ideaText);
+      
+      const response = await openRouterService.analyzeIdea({ 
+        idea: ideaText,
+        prompt: overviewPrompt  // Pass custom prompt
+      });
 
       if (response.success && response.data) {
         await updateAnalysis({
@@ -92,6 +109,13 @@ const IdeaAnalysis = () => {
   }, [updateAnalysis]);
 
   useEffect(() => {
+    // Auto-start analysis if we have pending analysis from navigation
+    if (shouldAnalyze && ideaData?.idea) {
+      analyzeIdea(locationState.ideaText);
+      return;
+    }
+
+    // Legacy flow - handle idea from query params
     if (ideaData && ideaData.analysis?.status === 'analyzing' && idea) {
       analyzeIdea(idea);
     } else if (!ideaData && slug && idea && user) {

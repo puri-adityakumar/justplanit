@@ -28,14 +28,15 @@ export class OpenRouterService {
     }
 
     // Main validation analysis function
-    async analyzeIdea(request: ValidationRequest): Promise<ValidationResponse> {
+    async analyzeIdea(request: ValidationRequest & { prompt?: string }): Promise<ValidationResponse> {
         const startTime = Date.now();
 
         try {
             console.log('Starting validation analysis for:', request.idea);
             console.log('Using API key:', OPENROUTER_API_KEY ? 'Present' : 'Missing');
 
-            const prompt = generateValidationPrompt(request.idea, request.user_context);
+            // Use custom prompt if provided, otherwise use default validation prompt
+            const prompt = request.prompt || generateValidationPrompt(request.idea, request.user_context);
 
             const requestBody = {
                 model: 'deepseek/deepseek-chat-v3.1:free', // Using DeepSeek model
