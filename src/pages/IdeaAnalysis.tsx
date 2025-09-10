@@ -33,12 +33,13 @@ import {
   Palette,
   Map
 } from "lucide-react";
-import { ValidationResult } from "@/types/validation";
+import { ValidationResult, OverviewResult } from "@/types/validation";
 import { useIdeaBySlug } from "@/hooks/use-ideas";
 import { useAuth } from "@/hooks/use-auth";
 import type { CompleteIdea } from "@/types/database";
 import { openRouterService } from "@/services/openrouter";
 import { generateOverviewPrompt } from "@/lib/prompts/overview-prompt";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 
 // Analysis steps for the loading animation
 const analysisSteps = [
@@ -57,7 +58,7 @@ const IdeaAnalysis = () => {
   const idea = searchParams.get('idea');
   const { user } = useAuth();
 
-  const { idea: ideaData, loading, error, updateAnalysis, createIdeaWithSlug } = useIdeaBySlug(slug || '');
+  const { idea: ideaData, loading, error, updateAnalysis, updateSection, createIdeaWithSlug } = useIdeaBySlug(slug || '');
   const [currentStep, setCurrentStep] = useState(0);
 
   // Add state variables for deduplication and rate limiting
@@ -115,27 +116,28 @@ const IdeaAnalysis = () => {
       });
 
       if (response.success && response.data) {
+        // Store the overview data in idea_data_sections
+        await updateSection('overview', response.data as unknown as Record<string, unknown>);
+
         await updateAnalysis({
           status: 'completed',
-          result: response.data as unknown as Record<string, unknown>,
           completed_at: new Date().toISOString()
         });
       } else {
         await updateAnalysis({
-          status: 'failed',
-          error: response.error || 'Failed to analyze idea'
+          status: 'failed'
         });
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      console.error('Analysis failed:', errorMessage);
       await updateAnalysis({
-        status: 'failed',
-        error: errorMessage
+        status: 'failed'
       });
     } finally {
       setIsAnalyzing(false); // Always reset the flag
     }
-  }, [updateAnalysis, isAnalyzing, lastAnalysisRequest]);
+  }, [updateAnalysis, updateSection, isAnalyzing, lastAnalysisRequest]);
 
   useEffect(() => {
     // 🛡️ SINGLE TRIGGER LOGIC: Only one path should execute
@@ -228,13 +230,14 @@ const IdeaAnalysis = () => {
   if (error || ideaData?.analysis?.status === 'failed') {
     return (
       <AnalysisError
-        error={error || ideaData?.analysis?.error}
+        error={error || 'Analysis failed. Please try again.'}
         onRetry={() => ideaData && analyzeIdea(ideaData.idea.description || '')}
       />
     );
   }
 
-  const validationData = ideaData?.analysis?.result as unknown as ValidationResult | undefined;
+  // Get validation data from the overview section instead of analysis.result
+  const validationData = ideaData?.sections?.overview as unknown as OverviewResult | undefined;
   if (!validationData || !ideaData) {
     return null;
   }
@@ -292,87 +295,107 @@ const IdeaAnalysis = () => {
 
             {/* Overview Tab - Current Market Analysis */}
             <TabsContent value="overview" className="mt-6">
-              {/* Executive Summary */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6 xl:col-span-2">
-                  <div className="flex items-center gap-3 mb-4">
-                    <TrendingUp className="h-6 w-6 text-primary" />
-                    <h3 className="text-xl font-bold text-white">Executive Summary</h3>
-                  </div>
+              <div className="space-y-8">
+                {/* Idea Summary */}
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Idea Summary</h3>
+                  <p className="text-foreground/80">{validationData.overview.idea_summary}</p>
+                </Card>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="text-lg font-semibold text-white mb-3">Key Strengths</h4>
-                      <div className="space-y-2">
-                        {validationData.executive_summary.key_strengths.map((strength, index) => (
-                          <div key={index} className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-foreground/80">{strength}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                {/* Key Features & Pain Points */}
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Key Features & Pain Points</h3>
+                  <ul className="list-disc pl-5 space-y-2 text-foreground/80">
+                    {validationData.overview.key_features_and_pain_points.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                </Card>
 
-                    <div>
-                      <h4 className="text-lg font-semibold text-white mb-3">Key Challenges</h4>
-                      <div className="space-y-2">
-                        {validationData.executive_summary.key_weaknesses.map((weakness, index) => (
-                          <div key={index} className="flex items-start gap-2">
-                            <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-foreground/80">{weakness}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                {/* Problems Solved */}
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Problems Solved</h3>
+                  <ul className="list-disc pl-5 space-y-2 text-foreground/80">
+                    {validationData.overview.problems_solved.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
                 </Card>
 
                 {/* Market Analysis */}
                 <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Globe className="h-6 w-6 text-primary" />
-                    <h3 className="text-xl font-bold text-white">Market Analysis</h3>
-                  </div>
-
-                  <div className="space-y-4">
+                  <h3 className="text-xl font-bold text-white mb-4">Market Analysis</h3>
+                  <div className="space-y-4 text-foreground/80">
                     <div>
-                      <div className="text-sm text-foreground/60 mb-1">Target Market</div>
-                      <div className="text-foreground/80">{validationData.market_analysis.target_market.demographics}</div>
+                      <strong>Target Audience:</strong> {validationData.overview.market_analysis.target_audience}
                     </div>
-
                     <div>
-                      <div className="text-sm text-foreground/60 mb-1">Market Size</div>
-                      <div className="text-2xl font-bold text-primary">{validationData.market_analysis.market_size.tam}</div>
+                      <strong>Growth Rate:</strong> {validationData.overview.market_analysis.growth_rate}
                     </div>
-
                     <div>
-                      <div className="text-sm text-foreground/60 mb-1">Growth Rate</div>
-                      <div className="text-lg font-semibold text-green-500">
-                        +{validationData.market_analysis.target_market.growth_rate}%
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-sm text-foreground/60 mb-2">Market Readiness</div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-background/20 rounded-full h-2">
-                          <div
-                            className="bg-primary h-2 rounded-full transition-all duration-1000"
-                            style={{ width: `${validationData.market_analysis.market_readiness * 10}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-primary font-semibold">{validationData.market_analysis.market_readiness}/10</span>
-                      </div>
+                      <strong>Opportunity:</strong> {validationData.overview.market_analysis.opportunity}
                     </div>
                   </div>
                 </Card>
-              </div>
 
+                {/* Risk Level */}
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">Risk Level Assessment</h3>
+                  <div className="text-foreground/80">
+                    <strong>Level:</strong> {validationData.overview.risk_level.level}<br />
+                    <strong>Explanation:</strong> {validationData.overview.risk_level.explanation}
+                  </div>
+                </Card>
+
+                {/* Estimated Cost - With Dropdown */}
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="cost">
+                    <AccordionTrigger>
+                      <h3 className="text-xl font-bold text-white">Estimated Cost: ${validationData.overview.estimated_cost.total}</h3>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="space-y-2 text-foreground/80">
+                        {validationData.overview.estimated_cost.breakdown.map((item, index) => (
+                          <li key={index}>
+                            <strong>{item.category}:</strong> ${item.amount} - {item.description}
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+
+                {/* AI Suggestions */}
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">AI Suggestions</h3>
+                  <ul className="list-disc pl-5 space-y-2 text-foreground/80">
+                    {validationData.overview.ai_suggestions.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                </Card>
+
+                {/* Future Scope - With Dropdown */}
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="future-scope">
+                    <AccordionTrigger>
+                      <h3 className="text-xl font-bold text-white">Future Scope</h3>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="list-disc pl-5 space-y-2 text-foreground/80">
+                        {validationData.overview.future_scope.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </div>
             </TabsContent>
 
             {/* PRD Tab */}
             <TabsContent value="prd" className="mt-6">
-              <PRDSection ideaData={ideaData} validationData={validationData} />
+              <PRDSection ideaData={ideaData} validationData={undefined} />
             </TabsContent>
 
             {/* Tech Stack Tab */}
@@ -402,50 +425,29 @@ const IdeaAnalysis = () => {
               </Card>
             </TabsContent>
 
-            {/* Market Tab - Existing Market Analysis */}
+            {/* Market Tab - Overview Market Analysis */}
             <TabsContent value="market" className="mt-6">
               <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <TrendingUp className="h-6 w-6 text-primary" />
-                  <h2 className="text-2xl font-bold text-white">Detailed Market Analysis</h2>
+                  <h2 className="text-2xl font-bold text-white">Market Analysis Overview</h2>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-4">Target Market</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="text-sm text-foreground/60 mb-1">Demographics</div>
-                        <div className="text-foreground/80">{validationData.market_analysis.target_market.demographics}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-foreground/60 mb-1">Growth Rate</div>
-                        <div className="text-lg font-semibold text-green-500">
-                          +{validationData.market_analysis.target_market.growth_rate}% annually
-                        </div>
-                      </div>
+                    <div className="text-foreground/80">
+                      <p><strong>Audience:</strong> {validationData.overview.market_analysis.target_audience}</p>
+                      <p><strong>Growth Rate:</strong> {validationData.overview.market_analysis.growth_rate}</p>
+                      <p><strong>Opportunity:</strong> {validationData.overview.market_analysis.opportunity}</p>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Market Opportunity</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="text-sm text-foreground/60 mb-1">Total Addressable Market</div>
-                        <div className="text-2xl font-bold text-primary">{validationData.market_analysis.market_size.tam}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-foreground/60 mb-1">Market Readiness Score</div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-background/20 rounded-full h-3">
-                            <div
-                              className="bg-primary h-3 rounded-full transition-all duration-1000"
-                              style={{ width: `${validationData.market_analysis.market_readiness * 10}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-primary font-semibold">{validationData.market_analysis.market_readiness}/10</span>
-                        </div>
-                      </div>
+                    <h3 className="text-lg font-semibold text-white mb-4">Market Size</h3>
+                    <div className="text-foreground/80">
+                      <p><strong>Size Category:</strong> {validationData.quick_stats.market_size}</p>
+                      <p><strong>Time to Market:</strong> {validationData.quick_stats.time_to_market}</p>
                     </div>
                   </div>
                 </div>

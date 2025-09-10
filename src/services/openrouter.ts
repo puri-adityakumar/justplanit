@@ -150,7 +150,7 @@ export class OpenRouterService {
         const startTime = Date.now();
 
         try {
-            const prompt = generateValidationPrompt(request.idea, request.user_context);
+            const prompt = generateOverviewPrompt(request.idea, request.user_context);
 
             const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                 method: 'POST',
@@ -169,8 +169,16 @@ export class OpenRouterService {
             });
 
             const data = await response.json();
-            const analysisResult = JSON.parse(data.choices[0].message.content);
+            const assistantMessage = data.choices[0]?.message?.content;
 
+            if (!assistantMessage) {
+                throw new Error('No response from AI model');
+            }
+
+            const cleanedResponse = this.cleanJsonResponse(assistantMessage);
+            const analysisResult = JSON.parse(cleanedResponse);
+
+            // Since this is web search version, assume it's full analysis, but transform if needed
             return {
                 success: true,
                 data: analysisResult,
@@ -217,10 +225,8 @@ export class OpenRouterService {
         switch (promptType) {
             case 'overview':
                 return {
-                    requiredFields: ['overview', 'confidence', 'next_steps'],
-                    nestedValidation: {
-                        overview: ['title', 'viability_score', 'verdict', 'one_liner', 'target_audience', 'market_size', 'key_strengths', 'key_challenges']
-                    }
+                    requiredFields: ['overview', 'quick_stats', 'confidence'],
+                    nestedValidation: {}
                 };
 
             case 'full_analysis':
@@ -314,82 +320,99 @@ export class OpenRouterService {
     private transformOverviewToValidationResult(overviewResult: any): any {
         console.log('Transforming overview result to ValidationResult format');
 
-        const overview = overviewResult.overview;
+        const overview = overviewResult?.overview || {};
+        const quickStats = overviewResult?.quick_stats || {};
+        const marketAnalysis = overview?.market_analysis || {};
+        const riskLevel = overview?.risk_level || {};
+        const estimatedCost = overview?.estimated_cost || {};
+        const costBreakdown = Array.isArray(estimatedCost?.breakdown) ? estimatedCost.breakdown : [];
+        const totalCost = Number(estimatedCost?.total) || 0;
 
         return {
             executive_summary: {
-                viability_score: overview.viability_score || 5,
-                verdict: overview.verdict || 'CONDITIONAL',
-                key_strengths: overview.key_strengths || [],
-                key_weaknesses: overview.key_challenges || [], // Map key_challenges to key_weaknesses
-                market_opportunity: overview.market_size || 'Not specified',
-                time_to_market: overview.time_to_market || 'Not specified'
+                viability_score: quickStats?.viability_score ?? 5,
+                verdict: quickStats?.verdict ?? 'CONDITIONAL',
+                key_strengths: overview?.key_features_and_pain_points || [],
+                key_weaknesses: overview?.key_challenges || [],
+                market_opportunity: quickStats?.market_size || 'Not specified',
+                time_to_market: quickStats?.time_to_market || 'Not specified'
             },
             market_analysis: {
                 target_market: {
-                    demographics: overview.target_audience || 'Not specified',
-                    size: 0, // Not provided in overview
-                    growth_rate: this.extractGrowthRate(overview.market_size) || 0
+                    demographics: marketAnalysis?.target_audience || 'Not specified',
+                    size: 0,
+                    growth_rate: this.extractGrowthRate(String(marketAnalysis?.growth_rate || '')) || 0
                 },
                 market_size: {
-                    tam: overview.market_size || 'Not specified',
-                    sam: 'Not analyzed in overview',
-                    som: 'Not analyzed in overview'
+                    tam: quickStats?.market_size || 'Not specified',
+                    sam: 'Not analyzed',
+                    som: 'Not analyzed'
                 },
                 trends: [],
-                market_readiness: overview.viability_score || 5,
+                market_readiness: quickStats?.viability_score ?? 5,
                 recent_developments: []
             },
             competitive_analysis: {
                 competitors: [],
                 competitive_advantages: [],
                 threats_level: 'MEDIUM',
-                market_position: overview.competitive_landscape || 'Not analyzed',
-                funding_landscape: 'Not analyzed in overview'
+                market_position: marketAnalysis?.opportunity || 'Not analyzed',
+                funding_landscape: 'Not analyzed'
             },
             technical_feasibility: {
                 complexity_rating: 5,
                 required_technologies: [],
                 resource_requirements: {
                     team_size: 0,
-                    timeline: overview.time_to_market || 'Not specified',
-                    budget_range: 'Not analyzed in overview'
+                    timeline: quickStats?.time_to_market || 'Not specified',
+                    budget_range: totalCost ? `$${totalCost}` : 'Not specified'
                 },
                 technical_risks: []
             },
             risk_assessment: {
-                overall_risk_level: 'MEDIUM',
-                risks: [],
+                overall_risk_level: riskLevel?.level || 'MEDIUM',
+                risks: riskLevel?.explanation ? [{
+                    category: "GENERAL",
+                    risk: riskLevel.explanation,
+                    probability: 50,
+                    impact: 50,
+                    mitigation: "Follow AI suggestions",
+                    market_evidence: "Based on analysis"
+                }] : [],
                 risk_score: 50,
                 regulatory_considerations: []
             },
             financial_projections: {
-                revenue_model: overview.monetization_potential || 'Not specified',
+                revenue_model: 'Not specified in overview',
                 projections: {
                     year1: 0,
                     year3: 0,
                     year5: 0
                 },
-                cost_structure: [],
-                break_even_point: 'Not analyzed in overview',
-                funding_required: 0,
+                cost_structure: costBreakdown.map((item: any) => ({
+                    category: item.category,
+                    percentage: totalCost ? Math.round((Number(item.amount || 0) / totalCost) * 100) : 0,
+                    amount: Number(item.amount || 0)
+                })),
+                break_even_point: 'Not analyzed',
+                funding_required: totalCost,
                 roi: 0,
-                funding_environment: 'Not analyzed in overview'
+                funding_environment: 'Not analyzed'
             },
             implementation_roadmap: {
                 phases: [],
                 critical_path: [],
                 success_metrics: [],
-                next_steps: overviewResult.next_steps || []
+                next_steps: overview?.ai_suggestions || []
             },
             recommendations: {
-                decision: overview.verdict || 'CONDITIONAL',
-                confidence: overviewResult.confidence || 5,
-                priority_actions: overviewResult.next_steps?.slice(0, 3) || [],
-                alternative_approaches: [],
-                success_probability: overview.viability_score * 10 || 50,
-                key_success_factors: overview.key_strengths || [],
-                market_timing: overview.quick_recommendation || 'Not specified'
+                decision: quickStats?.verdict || 'CONDITIONAL',
+                confidence: overviewResult?.confidence ?? 5,
+                priority_actions: overview?.ai_suggestions || [],
+                alternative_approaches: overview?.future_scope || [],
+                success_probability: (quickStats?.viability_score ?? 5) * 10,
+                key_success_factors: overview?.problems_solved || [],
+                market_timing: marketAnalysis?.opportunity || 'Not specified'
             },
             sources: {
                 sources: [],

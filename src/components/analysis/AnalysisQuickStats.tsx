@@ -1,9 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ValidationResult } from "@/types/validation";
+import { ValidationResult, OverviewResult } from "@/types/validation";
 
 interface AnalysisQuickStatsProps {
-  validationData: ValidationResult;
+  validationData: ValidationResult | OverviewResult;
 }
 
 export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) => {
@@ -17,12 +17,22 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
     }
   };
 
+  // Type guard to check if data has overview structure  
+  const hasOverviewStructure = (data: any): data is OverviewResult => {
+    return data && 'overview' in data && 'quick_stats' in data;
+  };
+
+  // Use quick_stats if available (new format), otherwise fallback to executive_summary (old format)
+  const stats = hasOverviewStructure(validationData)
+    ? validationData.quick_stats
+    : (validationData as ValidationResult).executive_summary;
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <div className="text-2xl font-bold text-primary mb-1">
-            {validationData.executive_summary.viability_score}/10
+            {stats.viability_score}/10
           </div>
           <div className="text-sm text-foreground/60">Viability Score</div>
         </div>
@@ -30,8 +40,8 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
 
       <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
-          <Badge className={`${getVerdictColor(validationData.executive_summary.verdict)} mb-1`}>
-            {validationData.executive_summary.verdict.replace('_', ' ')}
+          <Badge className={`${getVerdictColor(stats.verdict)} mb-1`}>
+            {stats.verdict.replace('_', ' ')}
           </Badge>
           <div className="text-sm text-foreground/60">Verdict</div>
         </div>
@@ -40,7 +50,9 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
       <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <div className="text-2xl font-bold text-primary mb-1">
-            {validationData.executive_summary.market_opportunity}
+            {hasOverviewStructure(validationData)
+              ? validationData.quick_stats.market_size.split(' ')[0] + ' Market'
+              : (validationData as ValidationResult).market_analysis?.market_size?.tam || 'N/A'}
           </div>
           <div className="text-sm text-foreground/60">Market Size</div>
         </div>
@@ -49,7 +61,9 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
       <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <div className="text-lg font-bold text-primary mb-1">
-            {validationData.executive_summary.time_to_market}
+            {hasOverviewStructure(validationData)
+              ? validationData.quick_stats.time_to_market
+              : (validationData as ValidationResult).executive_summary?.time_to_market || 'N/A'}
           </div>
           <div className="text-sm text-foreground/60">Time to Market</div>
         </div>

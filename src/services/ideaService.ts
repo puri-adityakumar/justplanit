@@ -1,9 +1,9 @@
 import { databases } from '@/lib/appwrite';
 import { ID, Query, Models } from 'appwrite';
-import { 
+import {
   DATABASE_CONFIG,
-  IdeaDocument, 
-  IdeaAnalysisDocument, 
+  IdeaDocument,
+  IdeaAnalysisDocument,
   IdeaDataSectionDocument,
   CompleteIdea,
   CreateIdeaRequest,
@@ -59,7 +59,7 @@ export class IdeaService {
     return response as unknown as IdeaDocument;
   }
 
-    // Get idea by slug
+  // Get idea by slug
   static async getIdeaBySlug(slug: string): Promise<IdeaDocument | null> {
     try {
       const response = await databases.listDocuments(
@@ -67,8 +67,8 @@ export class IdeaService {
         this.collections.IDEAS,
         [Query.equal('slug', parseInt(slug))]
       );
-      
-      return response.documents.length > 0 
+
+      return response.documents.length > 0
         ? response.documents[0] as unknown as IdeaDocument
         : null;
     } catch (err) {
@@ -98,8 +98,6 @@ export class IdeaService {
           status: rawAnalysis.status,
           viability_score: rawAnalysis.viability_score,
           market_size: rawAnalysis.market_size,
-          result: rawAnalysis.result ? JSON.parse(rawAnalysis.result) : undefined,
-          error: rawAnalysis.error,
           completed_at: rawAnalysis.completed_at,
           created_at: rawAnalysis.$createdAt,
           updated_at: rawAnalysis.$updatedAt
@@ -173,8 +171,6 @@ export class IdeaService {
       status: request.status || 'analyzing',
       viability_score: request.viability_score || null,
       market_size: request.market_size || null,
-      result: request.result ? JSON.stringify(request.result) : null,
-      error: request.error || null,
       completed_at: request.completed_at || null
       // Appwrite automatically manages $createdAt and $updatedAt
     };
@@ -199,7 +195,24 @@ export class IdeaService {
     }
 
     const rawAnalysis = response as unknown as IdeaAnalysisDocument;
-    
+
+    // Note: Overview data is now stored directly via upsertSection calls from openrouter.ts
+    // No need to sync from request.result here as it's handled at the service level
+
+    // Keep ideas.status in sync for dashboard cards
+    try {
+      if (request.status) {
+        await databases.updateDocument(
+          this.db,
+          this.collections.IDEAS,
+          request.idea_id,
+          { status: request.status }
+        );
+      }
+    } catch (err) {
+      console.error('Failed to sync idea status:', err);
+    }
+
     // Return parsed format
     return {
       $id: rawAnalysis.$id,
@@ -207,8 +220,6 @@ export class IdeaService {
       status: rawAnalysis.status,
       viability_score: rawAnalysis.viability_score,
       market_size: rawAnalysis.market_size,
-      result: rawAnalysis.result ? JSON.parse(rawAnalysis.result) : undefined,
-      error: rawAnalysis.error,
       completed_at: rawAnalysis.completed_at,
       created_at: rawAnalysis.$createdAt,
       updated_at: rawAnalysis.$updatedAt

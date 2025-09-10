@@ -18,20 +18,18 @@ export interface IdeaAnalysisDocument extends Models.Document {
   status?: 'analyzing' | 'completed' | 'failed';
   viability_score?: number;
   market_size?: string;
-  result?: string; // JSON string of ValidationResult
-  error?: string;
   completed_at?: string;
   // Inherits $createdAt, $updatedAt, $id, $collectionId, $databaseId, $permissions from Models.Document
 }
 
-export type SectionType = 
-  | 'overview' 
-  | 'prd' 
-  | 'tech_stack' 
-  | 'cost_analysis' 
-  | 'roadmap' 
-  | 'design_system' 
-  | 'workflows' 
+export type SectionType =
+  | 'overview'
+  | 'prd'
+  | 'tech_stack'
+  | 'cost_analysis'
+  | 'roadmap'
+  | 'design_system'
+  | 'workflows'
   | 'ai_context';
 
 export interface IdeaDataSectionDocument extends Models.Document {
@@ -50,8 +48,6 @@ export interface CompleteIdea {
     status?: 'analyzing' | 'completed' | 'failed';
     viability_score?: number;
     market_size?: string;
-    result?: Record<string, unknown>; // Parsed ValidationResult
-    error?: string;
     completed_at?: string;
     created_at: string;  // Maps to $createdAt
     updated_at: string;  // Maps to $updatedAt
@@ -72,8 +68,6 @@ export interface UpdateIdeaAnalysisRequest {
   status?: 'analyzing' | 'completed' | 'failed';
   viability_score?: number;
   market_size?: string;
-  result?: Record<string, unknown>; // ValidationResult from OpenRouter
-  error?: string;
   completed_at?: string;
 }
 
@@ -104,7 +98,7 @@ export const DATABASE_CONFIG = {
   DATABASE_ID: import.meta.env.VITE_APPWRITE_DATABASE_ID || '68c0517a0014c38c2a50',
   COLLECTIONS: {
     IDEAS: import.meta.env.VITE_APPWRITE_IDEAS_COLLECTION_ID || 'ideas',
-    IDEA_ANALYSIS: import.meta.env.VITE_APPWRITE_ANALYSIS_COLLECTION_ID || 'idea_analysis', 
+    IDEA_ANALYSIS: import.meta.env.VITE_APPWRITE_ANALYSIS_COLLECTION_ID || 'idea_analysis',
     IDEA_DATA_SECTIONS: import.meta.env.VITE_APPWRITE_SECTIONS_COLLECTION_ID || 'idea_data_sections'
   }
 } as const;

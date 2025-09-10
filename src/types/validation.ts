@@ -130,6 +130,41 @@ export interface SourcesCitations {
     last_updated: string;
 }
 
+// New overview result structure from updated prompt
+export interface OverviewResult {
+    overview: {
+        idea_summary: string;
+        key_features_and_pain_points: string[];
+        problems_solved: string[];
+        market_analysis: {
+            target_audience: string;
+            growth_rate: string;
+            opportunity: string;
+        };
+        risk_level: {
+            level: string;
+            explanation: string;
+        };
+        estimated_cost: {
+            total: string;
+            breakdown: Array<{
+                category: string;
+                amount: string;
+                description: string;
+            }>;
+        };
+        ai_suggestions: string[];
+        future_scope: string[];
+    };
+    quick_stats: {
+        viability_score: number;
+        verdict: string;
+        market_size: string;
+        time_to_market: string;
+    };
+    confidence: number;
+}
+
 // Main validation result interface
 export interface ValidationResult {
     executive_summary: ExecutiveSummary;
