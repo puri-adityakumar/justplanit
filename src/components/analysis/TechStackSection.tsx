@@ -88,7 +88,7 @@ export const TechStackSection = ({ ideaData }: TechStackSectionProps) => {
       </div>
 
       {/* Recommended Tech Stack */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-6">Recommended Tech Stack</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Object.entries(techStackData.recommended).map(([key, tech]) => (
@@ -97,7 +97,7 @@ export const TechStackSection = ({ ideaData }: TechStackSectionProps) => {
                 <div className="text-primary">{tech.icon}</div>
                 <h4 className="font-semibold text-white">{tech.title}</h4>
               </div>
-              
+
               <div className="mb-3">
                 <Badge className="bg-primary/20 text-primary border-primary/30 mb-2">
                   {tech.primary}
@@ -122,12 +122,12 @@ export const TechStackSection = ({ ideaData }: TechStackSectionProps) => {
       </Card>
 
       {/* Architecture Pattern */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Architecture Pattern</h3>
         <div className="bg-background/10 rounded-lg p-4">
           <h4 className="font-semibold text-white mb-2">{techStackData.architecture.pattern}</h4>
           <p className="text-foreground/70 mb-4">{techStackData.architecture.description}</p>
-          
+
           <h5 className="text-sm font-medium text-white mb-2">Key Benefits:</h5>
           <ul className="space-y-1">
             {techStackData.architecture.benefits.map((benefit, index) => (
@@ -141,7 +141,7 @@ export const TechStackSection = ({ ideaData }: TechStackSectionProps) => {
       </Card>
 
       {/* Development Tools */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Recommended Development Tools</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {techStackData.devTools.map((tool, index) => (
@@ -159,7 +159,7 @@ export const TechStackSection = ({ ideaData }: TechStackSectionProps) => {
       </Card>
 
       {/* Integration Notes */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">AI Integration Notes</h3>
         <div className="bg-background/10 rounded-lg p-4">
           <p className="text-foreground/80 mb-4">

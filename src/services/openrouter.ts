@@ -1,7 +1,7 @@
 // OpenRouter API integration for startup validation
 
 import { ValidationRequest, ValidationResponse, ValidationResult } from '@/types/validation';
-import { generateValidationPrompt } from '@/lib/prompts';
+import { generateOverviewPrompt } from '@/lib/prompts/overview-prompt';
 
 // OpenRouter API configuration
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || 'sk-or-v1-your-key-here';
@@ -39,8 +39,8 @@ export class OpenRouterService {
             const promptType = this.detectPromptType(request);
             console.log('Detected prompt type:', promptType);
 
-            // Use custom prompt if provided, otherwise use default validation prompt
-            const prompt = request.prompt || generateValidationPrompt(request.idea, request.user_context);
+            // Use custom prompt if provided, otherwise use default overview prompt
+            const prompt = request.prompt || generateOverviewPrompt(request.idea);
 
             const requestBody = {
                 model: 'deepseek/deepseek-chat-v3.1:free', // Using DeepSeek model

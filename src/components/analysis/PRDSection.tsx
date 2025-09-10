@@ -91,13 +91,13 @@ export const PRDSection = ({ ideaData, validationData }: PRDSectionProps) => {
       </div>
 
       {/* Overview */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Project Overview</h3>
         <p className="text-foreground/80 leading-relaxed">{prdData.overview}</p>
       </Card>
 
       {/* User Personas */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <div className="flex items-center gap-3 mb-4">
           <Users className="h-5 w-5 text-primary" />
           <h3 className="text-xl font-semibold text-white">User Personas</h3>
@@ -124,7 +124,7 @@ export const PRDSection = ({ ideaData, validationData }: PRDSectionProps) => {
       </Card>
 
       {/* User Stories */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">User Stories</h3>
         <div className="space-y-4">
           {prdData.userStories.map((story) => (
@@ -155,7 +155,7 @@ export const PRDSection = ({ ideaData, validationData }: PRDSectionProps) => {
       </Card>
 
       {/* Features */}
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
         <h3 className="text-xl font-semibold text-white mb-4">Core Features</h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {prdData.features.map((feature, index) => (

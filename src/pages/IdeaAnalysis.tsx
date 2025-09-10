@@ -10,7 +10,6 @@ import { AnalysisHeader } from "@/components/analysis/AnalysisHeader";
 import { AnalysisQuickStats } from "@/components/analysis/AnalysisQuickStats";
 import { AnalysisLoading } from "@/components/analysis/AnalysisLoading";
 import { AnalysisError } from "@/components/analysis/AnalysisError";
-import { AnalysisCallToAction } from "@/components/analysis/AnalysisCallToAction";
 import { IdeaLoading } from "@/components/analysis/IdeaLoading";
 import { PRDSection } from "@/components/analysis/PRDSection";
 import { TechStackSection } from "@/components/analysis/TechStackSection";
@@ -256,7 +255,7 @@ const IdeaAnalysis = () => {
 
           {/* Tabbed Interface */}
           <Tabs defaultValue="overview" className="mt-8">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 bg-card/20 backdrop-blur-md border-border/30">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 bg-black/40 backdrop-blur-xl border-border/30">
               <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-primary/20">
                 <Eye className="h-4 w-4" />
                 <span className="hidden sm:inline">Overview</span>
@@ -295,7 +294,7 @@ const IdeaAnalysis = () => {
             <TabsContent value="overview" className="mt-6">
               {/* Executive Summary */}
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-                <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6 xl:col-span-2">
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6 xl:col-span-2">
                   <div className="flex items-center gap-3 mb-4">
                     <TrendingUp className="h-6 w-6 text-primary" />
                     <h3 className="text-xl font-bold text-white">Executive Summary</h3>
@@ -329,7 +328,7 @@ const IdeaAnalysis = () => {
                 </Card>
 
                 {/* Market Analysis */}
-                <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <Globe className="h-6 w-6 text-primary" />
                     <h3 className="text-xl font-bold text-white">Market Analysis</h3>
@@ -369,7 +368,6 @@ const IdeaAnalysis = () => {
                 </Card>
               </div>
 
-              <AnalysisCallToAction />
             </TabsContent>
 
             {/* PRD Tab */}
@@ -394,7 +392,7 @@ const IdeaAnalysis = () => {
 
             {/* Design Tab - Placeholder */}
             <TabsContent value="design" className="mt-6">
-              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-8 text-center">
+              <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-8 text-center">
                 <Palette className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">Design System</h3>
                 <p className="text-foreground/70 mb-4">
@@ -406,7 +404,7 @@ const IdeaAnalysis = () => {
 
             {/* Market Tab - Existing Market Analysis */}
             <TabsContent value="market" className="mt-6">
-              <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+              <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <TrendingUp className="h-6 w-6 text-primary" />
                   <h2 className="text-2xl font-bold text-white">Detailed Market Analysis</h2>

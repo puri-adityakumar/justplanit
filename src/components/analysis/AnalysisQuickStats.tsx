@@ -19,7 +19,7 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <div className="text-2xl font-bold text-primary mb-1">
             {validationData.executive_summary.viability_score}/10
@@ -28,7 +28,7 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
         </div>
       </Card>
 
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <Badge className={`${getVerdictColor(validationData.executive_summary.verdict)} mb-1`}>
             {validationData.executive_summary.verdict.replace('_', ' ')}
@@ -37,7 +37,7 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
         </div>
       </Card>
 
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <div className="text-2xl font-bold text-primary mb-1">
             {validationData.executive_summary.market_opportunity}
@@ -46,7 +46,7 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
         </div>
       </Card>
 
-      <Card className="bg-card/20 backdrop-blur-md border-border/30 p-4">
+      <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <div className="text-lg font-bold text-primary mb-1">
             {validationData.executive_summary.time_to_market}

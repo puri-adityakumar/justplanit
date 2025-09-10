@@ -14,11 +14,11 @@ interface AnalysisLoadingProps {
   }>;
 }
 
-export const AnalysisLoading = ({ 
-  ideaDescription, 
-  currentStep, 
-  progress, 
-  analysisSteps 
+export const AnalysisLoading = ({
+  ideaDescription,
+  currentStep,
+  progress,
+  analysisSteps
 }: AnalysisLoadingProps) => {
   const CurrentIcon = currentStep < analysisSteps.length ? analysisSteps[currentStep].icon : analysisSteps[0].icon;
   const currentText = currentStep < analysisSteps.length ? analysisSteps[currentStep].text : "Analysis complete!";
@@ -39,7 +39,7 @@ export const AnalysisLoading = ({
           <span className="text-white">Analyzing Your Idea</span>
         </h1>
 
-        <div className="bg-card/20 backdrop-blur-md border border-border/30 rounded-lg p-6 mb-8">
+        <div className="bg-black/40 backdrop-blur-xl border border-border/30 rounded-lg p-6 mb-8">
           <p className="text-lg text-foreground/80 mb-6 italic text-center">
             "{ideaDescription}"
           </p>
@@ -54,7 +54,7 @@ export const AnalysisLoading = ({
 
           {/* Progress Bar */}
           <div className="w-full bg-background/20 rounded-full h-2 mb-4">
-            <div 
+            <div
               className="bg-primary h-2 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             ></div>
