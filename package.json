@@ -37,11 +37,12 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "npm run test:deduplication && npm run test:validation && npm run test:transformation",
+    "test": "npm run test:deduplication && npm run test:validation && npm run test:transformation && npm run test:loading",
     "test:deduplication": "node tests/simple-deduplication.test.js",
     "test:validation": "node tests/OpenRouterValidation.test.js",
     "test:transformation": "node tests/transformation.test.js",
-    "test:all": "node tests/simple-deduplication.test.js && node tests/OpenRouterValidation.test.js && node tests/transformation.test.js"
+    "test:loading": "node tests/idea-loading.test.js",
+    "test:all": "node tests/simple-deduplication.test.js && node tests/OpenRouterValidation.test.js && node tests/transformation.test.js && node tests/idea-loading.test.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

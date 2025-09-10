@@ -11,6 +11,7 @@ import { AnalysisQuickStats } from "@/components/analysis/AnalysisQuickStats";
 import { AnalysisLoading } from "@/components/analysis/AnalysisLoading";
 import { AnalysisError } from "@/components/analysis/AnalysisError";
 import { AnalysisCallToAction } from "@/components/analysis/AnalysisCallToAction";
+import { IdeaLoading } from "@/components/analysis/IdeaLoading";
 import { PRDSection } from "@/components/analysis/PRDSection";
 import { TechStackSection } from "@/components/analysis/TechStackSection";
 import { CostAnalysisSection } from "@/components/analysis/CostAnalysisSection";
@@ -187,6 +188,12 @@ const IdeaAnalysis = () => {
     }
   }, [ideaData]);
 
+  // Show loading state while fetching idea data
+  if (loading) {
+    return <IdeaLoading />;
+  }
+
+  // Show "not found" only after loading is complete and no data exists
   if (!ideaData) {
     return (
       <div className="min-h-screen bg-black relative">
