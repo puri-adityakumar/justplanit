@@ -508,7 +508,14 @@ const IdeaAnalysis = () => {
 
             {/* Roadmap Tab */}
             <TabsContent value="roadmap" className="mt-6">
-              <RoadmapSection ideaData={ideaData} />
+              <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-8 text-center">
+                <Calendar className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Development Roadmap</h3>
+                <p className="text-foreground/70 mb-4">
+                  Coming soon! This will include development timelines, milestones, and project planning.
+                </p>
+                <Badge variant="outline">Under Development</Badge>
+              </Card>
             </TabsContent>
 
             {/* Design Tab - Placeholder */}
