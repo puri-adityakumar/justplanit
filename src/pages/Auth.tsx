@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { GradientBars } from '@/components/ui/bg-bars';
 import { Navigation } from '@/components/Navigation';
+import { Footer } from '@/components/ui/footer';
 import { EmailInput } from '@/components/auth/EmailInput';
 import { OTPInput } from '@/components/auth/OTPInput';
 
@@ -79,6 +80,8 @@ const Auth = () => {
                     />
                 )}
             </div>
+
+            <Footer />
         </div>
     );
 };

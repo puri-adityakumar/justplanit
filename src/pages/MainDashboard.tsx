@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { GradientBars } from "@/components/ui/bg-bars";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/ui/footer";
 import { Badge } from "@/components/ui/badge";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { IdeaPromptSection } from "@/components/dashboard/IdeaPromptSection";
@@ -154,6 +155,8 @@ const MainDashboard = () => {
           <DashboardQuickActions totalIdeas={ideas.length} />
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
