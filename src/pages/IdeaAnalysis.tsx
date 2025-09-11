@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useSearchParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { GradientBars } from "@/components/ui/bg-bars";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/ui/footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -576,6 +577,8 @@ const IdeaAnalysis = () => {
           </Tabs>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };
