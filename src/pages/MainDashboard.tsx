@@ -10,7 +10,7 @@ import { IdeasGrid } from "@/components/dashboard/IdeasGrid";
 import { AnalysisLoading } from "@/components/analysis/AnalysisLoading";
 import { useAuth } from "@/hooks/use-auth";
 import { useIdeas } from "@/hooks/use-ideas";
-import { IdeaDocument } from "@/types/database";
+import { CompleteIdea } from "@/types/database";
 import { openRouterService } from "@/services/openrouter";
 import { generateOverviewPrompt } from "@/lib/prompts/overview-prompt";
 
@@ -32,10 +32,7 @@ const MainDashboard = () => {
 
     try {
       // Create idea in database and redirect immediately - much faster UX
-      const newIdea = await createIdea({
-        title: idea.substring(0, 100),
-        description: idea
-      });
+      const newIdea = await createIdea({});
 
       // Redirect immediately to analysis page - user sees progress instead of waiting
       navigate(`/dashboard/${newIdea.slug}`, {
@@ -67,11 +64,19 @@ const MainDashboard = () => {
   }, [location.state, handleIdeaSubmit]);
 
   const getStatsData = () => {
-    const completed = ideas.filter(i => i.status === 'completed').length;
-    const analyzing = ideas.filter(i => i.status === 'analyzing').length;
-    const failed = ideas.filter(i => i.status === 'failed').length;
-    const avgViability = 0; // Will need to calculate from analysis data
-    const publicIdeas = ideas.filter(i => i.is_public).length;
+    const completed = ideas.filter(i => i.idea.status === 'completed').length;
+    const analyzing = ideas.filter(i => i.idea.status === 'analyzing').length;
+    const failed = ideas.filter(i => i.idea.status === 'failed').length;
+
+    // Calculate average viability from analysis data
+    const viabilityScores = ideas
+      .filter(i => i.analysis?.viability_score)
+      .map(i => i.analysis!.viability_score!);
+    const avgViability = viabilityScores.length > 0
+      ? Math.round(viabilityScores.reduce((sum, score) => sum + score, 0) / viabilityScores.length)
+      : 0;
+
+    const publicIdeas = ideas.filter(i => i.idea.is_public).length;
 
     return { completed, analyzing, failed, avgViability, publicIdeas };
   };

@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IdeaCard } from "./IdeaCard";
-import { IdeaDocument } from "@/types/database";
+import { CompleteIdea } from "@/types/database";
 import {
   Search,
   Filter,
@@ -11,7 +11,7 @@ import {
 import React from "react";
 
 interface IdeasGridProps {
-  ideas: IdeaDocument[];
+  ideas: CompleteIdea[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   filterStatus: 'all' | 'completed' | 'analyzing' | 'failed';
@@ -28,9 +28,9 @@ export const IdeasGrid = ({
   const [view, setView] = React.useState<'list' | 'grid'>("list");
 
   const filteredIdeas = ideas.filter(idea => {
-    const matchesSearch = (idea.title?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-      (idea.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
-    const matchesFilter = filterStatus === 'all' || idea.status === filterStatus;
+    const matchesSearch = (idea.analysis?.title?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+      (idea.analysis?.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+    const matchesFilter = filterStatus === 'all' || idea.idea.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
@@ -89,7 +89,7 @@ export const IdeasGrid = ({
         view === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredIdeas.map((idea) => (
-              <IdeaCard key={idea.$id} idea={idea} />
+              <IdeaCard key={idea.idea.$id} idea={idea} />
             ))}
           </div>
         ) : (
@@ -108,7 +108,7 @@ export const IdeasGrid = ({
                 <tbody>
                   {filteredIdeas.map((idea) => {
                     const getStatusBadge = () => {
-                      switch (idea.status) {
+                      switch (idea.idea.status) {
                         case 'analyzing':
                           return <span className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-blue-500/20 text-blue-400">Analyzing</span>;
                         case 'completed':
@@ -121,15 +121,15 @@ export const IdeasGrid = ({
                     };
 
                     return (
-                      <tr key={idea.$id} className="border-b border-border/30 hover:bg-card/40 transition-colors">
+                      <tr key={idea.idea.$id} className="border-b border-border/30 hover:bg-card/40 transition-colors">
                         <td className="p-4">
                           <div className="font-medium text-white truncate max-w-[200px]">
-                            {idea.title || 'Untitled Idea'}
+                            {idea.analysis?.title || 'Untitled Idea'}
                           </div>
                         </td>
                         <td className="p-4 hidden md:table-cell">
                           <div className="text-sm text-foreground/70 line-clamp-2 max-w-[300px]">
-                            {idea.description || 'No description provided'}
+                            {idea.analysis?.description || 'No description provided'}
                           </div>
                         </td>
                         <td className="p-4">
@@ -137,7 +137,7 @@ export const IdeasGrid = ({
                         </td>
                         <td className="p-4">
                           <div className="text-sm text-foreground/60">
-                            {new Date(idea.$createdAt).toLocaleDateString()}
+                            {new Date(idea.idea.$createdAt).toLocaleDateString()}
                           </div>
                         </td>
                         <td className="p-4 text-right">
@@ -145,7 +145,7 @@ export const IdeasGrid = ({
                             variant="outline"
                             size="sm"
                             className="border-border/40"
-                            onClick={() => window.location.href = `/dashboard/${idea.slug}`}
+                            onClick={() => window.location.href = `/dashboard/${idea.idea.slug}`}
                           >
                             View
                           </Button>

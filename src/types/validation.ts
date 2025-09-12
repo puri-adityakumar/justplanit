@@ -132,6 +132,14 @@ export interface SourcesCitations {
 
 // New overview result structure from updated prompt
 export interface OverviewResult {
+    quick_stats: {
+        title: string;
+        description: string;
+        viability_score: number;
+        verdict: string;
+        market_size: string;
+        time_to_market: string;
+    };
     overview: {
         idea_summary: string;
         key_features_and_pain_points: string[];
@@ -149,18 +157,16 @@ export interface OverviewResult {
             total: string;
             breakdown: Array<{
                 category: string;
-                amount: string;
+                amount: number;
                 description: string;
             }>;
         };
+        funding_requirements: {
+            initial_funding: string;
+            runway_months: string;
+        };
         ai_suggestions: string[];
         future_scope: string[];
-    };
-    quick_stats: {
-        viability_score: number;
-        verdict: string;
-        market_size: string;
-        time_to_market: string;
     };
     confidence: number;
 }

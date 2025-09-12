@@ -1,12 +1,17 @@
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ValidationResult, OverviewResult } from "@/types/validation";
+import { IdeaService } from "@/services/ideaService";
 
 interface AnalysisQuickStatsProps {
-  validationData: ValidationResult | OverviewResult;
+  quickStats?: OverviewResult['quick_stats'];
+  ideaId?: string;
+  // Fallback for backward compatibility
+  validationData?: ValidationResult | OverviewResult;
 }
 
-export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) => {
+export const AnalysisQuickStats = ({ quickStats, ideaId, validationData }: AnalysisQuickStatsProps) => {
   const getVerdictColor = (verdict: string) => {
     switch (verdict) {
       case 'STRONG_GO': return 'bg-green-500 text-white';
@@ -22,10 +27,33 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
     return data && 'overview' in data && 'quick_stats' in data;
   };
 
-  // Use quick_stats if available (new format), otherwise fallback to executive_summary (old format)
-  const stats = hasOverviewStructure(validationData)
-    ? validationData.quick_stats
-    : (validationData as ValidationResult).executive_summary;
+  // Use quickStats if available, otherwise fallback to validationData
+  const stats = quickStats ||
+    (hasOverviewStructure(validationData)
+      ? validationData.quick_stats
+      : (validationData as ValidationResult)?.executive_summary);
+
+  // Update database with viability score and market size when quickStats are available
+  useEffect(() => {
+    if (quickStats && ideaId && (quickStats.viability_score || quickStats.market_size)) {
+      const updateAnalysis = async () => {
+        try {
+          await IdeaService.upsertAnalysis({
+            idea_id: ideaId,
+            viability_score: quickStats.viability_score,
+            market_size: quickStats.market_size
+          });
+        } catch (error) {
+          console.error('Failed to update analysis with viability/market data:', error);
+        }
+      };
+      updateAnalysis();
+    }
+  }, [quickStats?.viability_score, quickStats?.market_size, ideaId]);
+
+  if (!stats) {
+    return null;
+  }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -50,9 +78,11 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
       <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <div className="text-2xl font-bold text-primary mb-1">
-            {hasOverviewStructure(validationData)
-              ? validationData.quick_stats.market_size.split(' ')[0] + ' Market'
-              : (validationData as ValidationResult).market_analysis?.market_size?.tam || 'N/A'}
+            {quickStats
+              ? quickStats.market_size.split(' ')[0] + ' Market'
+              : hasOverviewStructure(validationData)
+                ? validationData.quick_stats.market_size.split(' ')[0] + ' Market'
+                : (validationData as ValidationResult).market_analysis?.market_size?.tam || 'N/A'}
           </div>
           <div className="text-sm text-foreground/60">Market Size</div>
         </div>
@@ -61,9 +91,11 @@ export const AnalysisQuickStats = ({ validationData }: AnalysisQuickStatsProps) 
       <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-4">
         <div className="text-center">
           <div className="text-lg font-bold text-primary mb-1">
-            {hasOverviewStructure(validationData)
-              ? validationData.quick_stats.time_to_market
-              : (validationData as ValidationResult).executive_summary?.time_to_market || 'N/A'}
+            {quickStats
+              ? quickStats.time_to_market
+              : hasOverviewStructure(validationData)
+                ? validationData.quick_stats.time_to_market
+                : (validationData as ValidationResult).executive_summary?.time_to_market || 'N/A'}
           </div>
           <div className="text-sm text-foreground/60">Time to Market</div>
         </div>

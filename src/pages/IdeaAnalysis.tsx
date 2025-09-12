@@ -16,6 +16,7 @@ import { PRDSection } from "@/components/analysis/PRDSection";
 import { TechStackSection } from "@/components/analysis/TechStackSection";
 import { MarketAnalysisSection } from "@/components/analysis/MarketAnalysisSection";
 import { AIContextSection } from "@/components/analysis/AIContextSection";
+import { OverviewSection } from "@/components/analysis/OverviewSection";
 import { TechStackQuestionnaire } from "../components/analysis/TechStackQuestionnaire";
 import {
   TrendingUp,
@@ -34,7 +35,7 @@ import {
   Palette,
   Map
 } from "lucide-react";
-import { ValidationResult } from "@/types/validation";
+import { ValidationResult, OverviewResult } from "@/types/validation";
 import { useIdeaBySlug } from "@/hooks/use-ideas";
 import { useAuth } from "@/hooks/use-auth";
 import type { CompleteIdea } from "@/types/database";
@@ -79,6 +80,11 @@ const IdeaAnalysis = () => {
   // Check if we need to start analysis immediately
   const locationState = location.state as { pendingAnalysis?: boolean; ideaText?: string } | null;
   const shouldAnalyze = locationState?.pendingAnalysis && locationState?.ideaText;
+
+  // Type guard to check if data is OverviewResult
+  const isOverviewResult = (data: any): data is OverviewResult => {
+    return data && typeof data === 'object' && 'quick_stats' in data && 'overview' in data;
+  };
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
@@ -332,11 +338,17 @@ const IdeaAnalysis = () => {
       <div className="relative z-10 px-6 py-8">
         <div className="max-w-7xl mx-auto">
           <AnalysisHeader
+            quickStats={isOverviewResult(validationData) ? validationData.quick_stats : undefined}
+            ideaId={ideaData.idea.$id}
             title={ideaData.idea.title || 'Untitled Idea'}
             description={ideaData.idea.description || ''}
           />
 
-          <AnalysisQuickStats validationData={validationData} />
+          <AnalysisQuickStats
+            quickStats={isOverviewResult(validationData) ? validationData.quick_stats : undefined}
+            ideaId={ideaData.idea.$id}
+            validationData={validationData}
+          />
 
           {/* Tabbed Interface */}
           <Tabs defaultValue="overview" className="mt-8">
@@ -375,121 +387,20 @@ const IdeaAnalysis = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* Overview Tab - Current Market Analysis */}
+            {/* Overview Tab - New OverviewSection Component */}
             <TabsContent value="overview" className="mt-6">
-              <div className="space-y-8">
-                {/* Executive Summary */}
-                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Executive Summary</h3>
-                  <div className="text-foreground/80 space-y-2">
-                    <p><strong>Viability Score:</strong> {validationData?.executive_summary?.viability_score ?? 'N/A'}/10</p>
-                    <p><strong>Verdict:</strong> {validationData?.executive_summary?.verdict ?? 'N/A'}</p>
-                    <p><strong>Market Opportunity:</strong> {validationData?.executive_summary?.market_opportunity ?? 'N/A'}</p>
-                    <p><strong>Time to Market:</strong> {validationData?.executive_summary?.time_to_market ?? 'N/A'}</p>
-                  </div>
+              {validationData && isOverviewResult(validationData) ? (
+                <OverviewSection validationData={validationData} />
+              ) : (
+                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-8 text-center">
+                  <Globe className="h-12 w-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No Overview Data Available</h3>
+                  <p className="text-foreground/70 mb-4">
+                    Overview analysis data is not available for this idea.
+                  </p>
+                  <Badge variant="outline">Analysis Required</Badge>
                 </Card>
-
-                {/* Key Strengths and Weaknesses */}
-                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Key Strengths and Weaknesses</h3>
-                  <div className="space-y-4 text-foreground/80">
-                    <div>
-                      <strong>Strengths:</strong>
-                      <ul className="list-disc pl-5 space-y-2">
-                        {validationData?.executive_summary?.key_strengths?.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        )) ?? <li>N/A</li>}
-                      </ul>
-                    </div>
-                    <div>
-                      <strong>Weaknesses:</strong>
-                      <ul className="list-disc pl-5 space-y-2">
-                        {validationData?.executive_summary?.key_weaknesses?.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        )) ?? <li>N/A</li>}
-                      </ul>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Problems Solved / Key Success Factors */}
-                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Key Success Factors</h3>
-                  <ul className="list-disc pl-5 space-y-2 text-foreground/80">
-                    {validationData?.recommendations?.key_success_factors?.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    )) ?? <li>N/A</li>}
-                  </ul>
-                </Card>
-
-                {/* Market Analysis */}
-                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Market Analysis</h3>
-                  <div className="text-foreground/80 space-y-2">
-                    <p><strong>Demographics:</strong> {validationData?.market_analysis?.target_market?.demographics ?? 'N/A'}</p>
-                    <p><strong>Growth Rate:</strong> {validationData?.market_analysis?.target_market?.growth_rate ?? 'N/A'}%</p>
-                    <p><strong>TAM:</strong> {validationData?.market_analysis?.market_size?.tam ?? 'N/A'}</p>
-                  </div>
-                </Card>
-
-                {/* Risk Assessment */}
-                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Risk Assessment</h3>
-                  <div className="text-foreground/80">
-                    <p><strong>Level:</strong> {validationData?.risk_assessment?.overall_risk_level ?? 'N/A'}</p>
-                    <p><strong>Risk Score:</strong> {validationData?.risk_assessment?.risk_score ?? 'N/A'}</p>
-                    <ul className="list-disc pl-5 space-y-2 mt-2">
-                      {validationData?.risk_assessment?.risks?.map((risk, index) => (
-                        <li key={index}>{risk.category}: {risk.risk}</li>
-                      )) ?? <li>N/A</li>}
-                    </ul>
-                  </div>
-                </Card>
-
-                {/* Estimated Cost */}
-                <Accordion type="single" collapsible>
-                  <AccordionItem value="cost">
-                    <AccordionTrigger>
-                      <h3 className="text-xl font-bold text-white">Estimated Funding Required: ${validationData?.financial_projections?.funding_required ?? 'N/A'}</h3>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="space-y-2 text-foreground/80">
-                        {validationData?.financial_projections?.cost_structure?.map((item, index) => (
-                          <li key={index}>
-                            <strong>{item.category}:</strong> ${item.amount} ({item.percentage}%)
-                          </li>
-                        )) ?? <li>N/A</li>}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-
-                {/* AI Suggestions / Priority Actions */}
-                <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Priority Actions</h3>
-                  <ul className="list-disc pl-5 space-y-2 text-foreground/80">
-                    {validationData?.recommendations?.priority_actions?.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    )) ?? <li>N/A</li>}
-                  </ul>
-                </Card>
-
-                {/* Future Scope / Alternative Approaches */}
-                <Accordion type="single" collapsible>
-                  <AccordionItem value="future-scope">
-                    <AccordionTrigger>
-                      <h3 className="text-xl font-bold text-white">Future Scope</h3>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="list-disc pl-5 space-y-2 text-foreground/80">
-                        {validationData?.recommendations?.alternative_approaches?.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        )) ?? <li>N/A</li>}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </div>
+              )}
             </TabsContent>
 
             {/* PRD Tab */}

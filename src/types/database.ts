@@ -5,8 +5,6 @@ import { Models } from 'appwrite';
 export interface IdeaDocument extends Models.Document {
   user_id: string;
   user_name: string;
-  title?: string;
-  description?: string;
   slug?: number;
   status: 'analyzing' | 'completed' | 'failed';
   is_public: boolean;
@@ -19,6 +17,8 @@ export interface IdeaAnalysisDocument extends Models.Document {
   viability_score?: number;
   market_size?: string;
   completed_at?: string;
+  title?: string;
+  description?: string;
   // Inherits $createdAt, $updatedAt, $id, $collectionId, $databaseId, $permissions from Models.Document
 }
 
@@ -50,6 +50,8 @@ export interface CompleteIdea {
     viability_score?: number;
     market_size?: string;
     completed_at?: string;
+    title?: string;
+    description?: string;
     created_at: string;  // Maps to $createdAt
     updated_at: string;  // Maps to $updatedAt
   };
@@ -60,8 +62,6 @@ export interface CompleteIdea {
 export interface CreateIdeaRequest {
   user_id: string;
   user_name: string;
-  title?: string;
-  description?: string;
 }
 
 export interface UpdateIdeaAnalysisRequest {
@@ -70,6 +70,8 @@ export interface UpdateIdeaAnalysisRequest {
   viability_score?: number;
   market_size?: string;
   completed_at?: string;
+  title?: string;
+  description?: string;
 }
 
 export interface CreateSectionRequest {

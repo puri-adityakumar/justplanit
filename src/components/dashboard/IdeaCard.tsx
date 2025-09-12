@@ -11,16 +11,16 @@ import {
   MoreHorizontal,
   Loader
 } from "lucide-react";
-import { IdeaDocument } from "@/types/database";
+import { CompleteIdea } from "@/types/database";
 import { Link } from "react-router-dom";
 
 interface IdeaCardProps {
-  idea: IdeaDocument;
+  idea: CompleteIdea;
 }
 
 export const IdeaCard = ({ idea }: IdeaCardProps) => {
   const getStatusIcon = () => {
-    switch (idea.status) {
+    switch (idea.idea.status) {
       case 'analyzing':
         return <Loader className="h-4 w-4 animate-spin text-blue-500" />;
       case 'completed':
@@ -31,7 +31,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
   };
 
   const getStatusBadge = () => {
-    switch (idea.status) {
+    switch (idea.idea.status) {
       case 'analyzing':
         return <Badge variant="secondary" className="bg-blue-500/20 text-blue-400">Analyzing</Badge>;
       case 'completed':
@@ -62,11 +62,11 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
         <div className="flex items-center gap-2 min-w-0">
           {getStatusIcon()}
           <h3 className="text-lg font-semibold text-white truncate max-w-[18rem] sm:max-w-[22rem]">
-            {idea.title || 'Untitled Idea'}
+            {idea.analysis?.title || 'Untitled Idea'}
           </h3>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {idea.is_public && (
+          {idea.idea.is_public && (
             <Eye className="h-4 w-4 text-foreground/40" />
           )}
           <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -76,24 +76,24 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
       </div>
 
       <p className="text-foreground/70 text-sm mb-4 line-clamp-2 leading-relaxed break-words">
-        {idea.description || 'No description provided'}
+        {idea.analysis?.description || 'No description provided'}
       </p>
 
       <div className="flex items-center justify-between mb-4">
         {getStatusBadge()}
         <span className="text-xs text-foreground/50">
-          {formatDate(idea.$createdAt)}
+          {formatDate(idea.idea.$createdAt)}
         </span>
       </div>
 
-      {idea.status === 'completed' && (
+      {idea.idea.status === 'completed' && (
         <div className="grid grid-cols-2 gap-4 mb-4 py-3 border-t border-border/20">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
             <div>
               <div className="text-xs text-foreground/60">Viability</div>
-              <div className="text-sm font-semibold text-foreground/60">
-                Analysis needed
+              <div className={`text-sm font-semibold ${getViabilityColor(idea.analysis?.viability_score)}`}>
+                {idea.analysis?.viability_score ? `${idea.analysis.viability_score}/10` : 'Analysis needed'}
               </div>
             </div>
           </div>
@@ -102,14 +102,14 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
             <div>
               <div className="text-xs text-foreground/60">Market Size</div>
               <div className="text-sm font-semibold text-foreground/60">
-                Analysis needed
+                {idea.analysis?.market_size || 'Analysis needed'}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {idea.status === 'analyzing' && (
+      {idea.idea.status === 'analyzing' && (
         <div className="py-3 border-t border-border/20 mb-4">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-blue-500" />
@@ -118,7 +118,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
         </div>
       )}
 
-      {idea.status === 'failed' && (
+      {idea.idea.status === 'failed' && (
         <div className="py-3 border-t border-border/20 mb-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-red-500" />
@@ -128,23 +128,23 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
       )}
 
       <div className="flex gap-2">
-        {idea.status === 'completed' && (
-          <Link to={`/dashboard/${idea.slug}`} className="flex-1 min-w-0">
+        {idea.idea.status === 'completed' && (
+          <Link to={`/dashboard/${idea.idea.slug}`} className="flex-1 min-w-0">
             <Button className="w-full bg-primary hover:bg-primary/90 truncate">
               View Analysis
             </Button>
           </Link>
         )}
 
-        {idea.status === 'analyzing' && (
-          <Link to={`/dashboard/${idea.slug}`} className="flex-1 min-w-0">
+        {idea.idea.status === 'analyzing' && (
+          <Link to={`/dashboard/${idea.idea.slug}`} className="flex-1 min-w-0">
             <Button variant="outline" className="w-full border-border/40 truncate">
               View Progress
             </Button>
           </Link>
         )}
 
-        {idea.status === 'failed' && (
+        {idea.idea.status === 'failed' && (
           <Button variant="outline" className="flex-1 border-border/40 truncate">
             Retry Analysis
           </Button>
