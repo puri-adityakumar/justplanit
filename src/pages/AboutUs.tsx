@@ -85,6 +85,50 @@ const AboutUs = () => {
                         </p>
                     </div>
 
+                    {/* Challenges Section */}
+                    <section id="challenges" className="mb-20">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-body font-bold text-white mb-4">
+                                Challenges we solve
+                            </h2>
+                            <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
+                                Common pitfalls when teams jump straight into code, and how we address them.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <Card className="bg-card/30 backdrop-blur-xl border-border/40 p-6 hover:bg-card/50 transition-all duration-300">
+                                <h3 className="text-lg font-semibold text-white mb-2">LLMs forget context</h3>
+                                <p className="text-sm text-foreground/70 leading-relaxed mb-2">
+                                    Ad‑hoc prompts lead to inconsistency and rework.
+                                </p>
+                                <p className="text-sm text-primary/90">
+                                    Solution: Durable context packs that are shareable and prompt‑ready.
+                                </p>
+                            </Card>
+
+                            <Card className="bg-card/30 backdrop-blur-xl border-border/40 p-6 hover:bg-card/50 transition-all duration-300">
+                                <h3 className="text-lg font-semibold text-white mb-2">Vibe coding misaligns teams</h3>
+                                <p className="text-sm text-foreground/70 leading-relaxed mb-2">
+                                    Requirements, constraints, and acceptance criteria are unclear.
+                                </p>
+                                <p className="text-sm text-primary/90">
+                                    Solution: Structured briefs with user stories and clear acceptance criteria.
+                                </p>
+                            </Card>
+
+                            <Card className="bg-card/30 backdrop-blur-xl border-border/40 p-6 hover:bg-card/50 transition-all duration-300">
+                                <h3 className="text-lg font-semibold text-white mb-2">Decisions lack grounding</h3>
+                                <p className="text-sm text-foreground/70 leading-relaxed mb-2">
+                                    Missing market and competitive signals slow momentum.
+                                </p>
+                                <p className="text-sm text-primary/90">
+                                    Solution: Embedded web research to inform scope and trade‑offs.
+                                </p>
+                            </Card>
+                        </div>
+                    </section>
+
                     {/* Features Section */}
                     <section id="features" className="mb-20">
                         <div className="text-center mb-12">
@@ -241,19 +285,9 @@ const AboutUs = () => {
                         </div>
 
                         <div className="text-center mt-12">
-                            <Card className="bg-card/20 backdrop-blur-xl border-border/30 p-8 max-w-2xl mx-auto">
-                                <h3 className="text-xl font-semibold text-white mb-4">
-                                    Ready to validate your next big idea?
-                                </h3>
-                                <p className="text-foreground/70 mb-6">
-                                    Join thousands of entrepreneurs who trust Just Plan It! for startup validation.
-                                </p>
-                                <Link to="/">
-                                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                                        Get Started Free
-                                    </Button>
-                                </Link>
-                            </Card>
+                            <h1 className="pt-8 text-4xl md:text-5xl text-white">
+                                don't just vibe-code, plan and execute with "Just Plan It!"
+                            </h1>
                         </div>
                     </section>
                 </div>
