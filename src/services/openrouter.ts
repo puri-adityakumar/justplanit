@@ -1,6 +1,6 @@
 // OpenRouter API integration for startup validation
 
-import { ValidationRequest, ValidationResponse, ValidationResult } from '@/types/validation';
+import { ValidationRequest, ValidationResponse, ValidationResult, OverviewResult } from '@/types/validation';
 import { generateOverviewPrompt } from '@/lib/prompts/overview-prompt';
 import { generateMarketPrompt } from '@/lib/prompts/market-prompt';
 import { generatePRDPrompt } from '@/lib/prompts/prd-prompt';
@@ -122,11 +122,6 @@ export class OpenRouterService {
             // Validate the structure based on detected prompt type
             if (!this.validateAnalysisStructure(analysisResult, promptType)) {
                 throw new Error(`Analysis result missing required fields for ${promptType} format`);
-            }
-
-            // Transform overview data to match UI expectations
-            if (promptType === 'overview') {
-                analysisResult = this.transformOverviewToValidationResult(analysisResult);
             }
 
             console.log('Validation analysis completed in', processingTime, 'ms');
@@ -485,130 +480,6 @@ export class OpenRouterService {
         }
 
         return true;
-    }
-
-    // Transform overview response to match UI's expected ValidationResult format
-    private transformOverviewToValidationResult(overviewResult: any): any {
-        console.log('Transforming overview result to ValidationResult format');
-
-        const overview = overviewResult?.overview || {};
-        const quickStats = overviewResult?.quick_stats || {};
-        const marketAnalysis = overview?.market_analysis || {};
-        const riskLevel = overview?.risk_level || {};
-        const estimatedCost = overview?.estimated_cost || {};
-        const costBreakdown = Array.isArray(estimatedCost?.breakdown) ? estimatedCost.breakdown : [];
-        const totalCost = Number(estimatedCost?.total) || 0;
-
-        return {
-            executive_summary: {
-                viability_score: quickStats?.viability_score ?? 5,
-                verdict: quickStats?.verdict ?? 'CONDITIONAL',
-                key_strengths: overview?.key_features_and_pain_points || [],
-                key_weaknesses: overview?.key_challenges || [],
-                market_opportunity: quickStats?.market_size || 'Not specified',
-                time_to_market: quickStats?.time_to_market || 'Not specified'
-            },
-            market_analysis: {
-                target_market: {
-                    demographics: marketAnalysis?.target_audience || 'Not specified',
-                    size: 0,
-                    growth_rate: this.extractGrowthRate(String(marketAnalysis?.growth_rate || '')) || 0
-                },
-                market_size: {
-                    tam: quickStats?.market_size || 'Not specified',
-                    sam: 'Not analyzed',
-                    som: 'Not analyzed'
-                },
-                trends: [],
-                market_readiness: quickStats?.viability_score ?? 5,
-                recent_developments: []
-            },
-            competitive_analysis: {
-                competitors: [],
-                competitive_advantages: [],
-                threats_level: 'MEDIUM',
-                market_position: marketAnalysis?.opportunity || 'Not analyzed',
-                funding_landscape: 'Not analyzed'
-            },
-            technical_feasibility: {
-                complexity_rating: 5,
-                required_technologies: [],
-                resource_requirements: {
-                    team_size: 0,
-                    timeline: quickStats?.time_to_market || 'Not specified',
-                    budget_range: totalCost ? `$${totalCost}` : 'Not specified'
-                },
-                technical_risks: []
-            },
-            risk_assessment: {
-                overall_risk_level: riskLevel?.level || 'MEDIUM',
-                risks: riskLevel?.explanation ? [{
-                    category: "GENERAL",
-                    risk: riskLevel.explanation,
-                    probability: 50,
-                    impact: 50,
-                    mitigation: "Follow AI suggestions",
-                    market_evidence: "Based on analysis"
-                }] : [],
-                risk_score: 50,
-                regulatory_considerations: []
-            },
-            financial_projections: {
-                revenue_model: 'Not specified in overview',
-                projections: {
-                    year1: 0,
-                    year3: 0,
-                    year5: 0
-                },
-                cost_structure: costBreakdown.map((item: any) => ({
-                    category: item.category,
-                    percentage: totalCost ? Math.round((Number(item.amount || 0) / totalCost) * 100) : 0,
-                    amount: Number(item.amount || 0)
-                })),
-                break_even_point: 'Not analyzed',
-                funding_required: totalCost,
-                roi: 0,
-                funding_environment: 'Not analyzed'
-            },
-            implementation_roadmap: {
-                phases: [],
-                critical_path: [],
-                success_metrics: [],
-                next_steps: overview?.ai_suggestions || []
-            },
-            recommendations: {
-                decision: quickStats?.verdict || 'CONDITIONAL',
-                confidence: overviewResult?.confidence ?? 5,
-                priority_actions: overview?.ai_suggestions || [],
-                alternative_approaches: overview?.future_scope || [],
-                success_probability: (quickStats?.viability_score ?? 5) * 10,
-                key_success_factors: overview?.problems_solved || [],
-                market_timing: marketAnalysis?.opportunity || 'Not specified'
-            },
-            sources: {
-                sources: [],
-                search_quality: 5,
-                last_updated: new Date().toISOString()
-            }
-        };
-    }
-
-    // Helper function to extract growth rate from market size description
-    private extractGrowthRate(marketSize: string): number {
-        if (!marketSize) return 0;
-
-        // Try to extract percentage from text like "Growing at 15% annually"
-        const growthMatch = marketSize.match(/(\d+)%/);
-        if (growthMatch) {
-            return parseInt(growthMatch[1]);
-        }
-
-        // Default growth rates based on market size description
-        if (marketSize.toLowerCase().includes('large')) return 8;
-        if (marketSize.toLowerCase().includes('medium')) return 5;
-        if (marketSize.toLowerCase().includes('small')) return 3;
-
-        return 0;
     }
 
     // This method has been removed - we only use real API calls now

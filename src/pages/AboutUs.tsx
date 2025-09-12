@@ -25,42 +25,42 @@ const AboutUs = () => {
 
     const features = [
         {
-            icon: Search,
-            title: "Web Research",
-            description: "Comprehensive market analysis using real-time web data"
-        },
-        {
             icon: Brain,
-            title: "Expert AI Insights",
-            description: "Advanced AI provides professional-grade business analysis"
-        },
-        {
-            icon: BarChart3,
-            title: "Market Validation",
-            description: "Data-driven validation with actionable recommendations"
+            title: "Context Packs",
+            description: "Structured briefs with problem, goals, scope, personas, user stories, constraints, risks, and next steps."
         },
         {
             icon: Target,
-            title: "Action Planning",
-            description: "Get clear next steps to move your idea forward"
+            title: "Stakeholder Alignment",
+            description: "Clear, role‑focused views for developers and product leads so handoffs are crisp and complete."
+        },
+        {
+            icon: Search,
+            title: "Grounded Research",
+            description: "Relevant market and competitive signals embedded into the brief to inform decisions."
+        },
+        {
+            icon: BarChart3,
+            title: "Prompt & Handoff",
+            description: "Export prompt‑ready packets and ticket‑friendly breakdowns for fast execution."
         }
     ];
 
     const howItWorksSteps = [
         {
             step: "01",
-            title: "Share Your Idea",
-            description: "Type or speak your startup concept using our intuitive interface"
+            title: "Describe Your Idea",
+            description: "Add audience, constraints, and success metrics to set strong context."
         },
         {
             step: "02",
-            title: "AI Analysis",
-            description: "Our system conducts market research and competitive analysis"
+            title: "Generate the Context",
+            description: "Our agents assemble a structured context pack and stitch in web research."
         },
         {
             step: "03",
-            title: "Get Results",
-            description: "Receive comprehensive validation report with actionable insights"
+            title: "Align and Build",
+            description: "Share with your team, export to prompts or tickets, and start building with confidence."
         }
     ];
 
@@ -81,18 +81,62 @@ const AboutUs = () => {
                             About Just Plan It!
                         </h1>
                         <p className="text-xl md:text-2xl text-foreground/60 max-w-3xl mx-auto leading-relaxed">
-                            Empowering entrepreneurs with AI-driven startup validation and market insights.
+                            Vibe coding wastes time and context. LLMs forget, teams misalign. Just Plan It generates durable, structured context for LLMs and developers so you move from idea to plan with clarity and speed.
                         </p>
                     </div>
+
+                    {/* Challenges Section */}
+                    <section id="challenges" className="mb-20">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-body font-bold text-white mb-4">
+                                Challenges we solve
+                            </h2>
+                            <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
+                                Common pitfalls when teams jump straight into code, and how we address them.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <Card className="bg-card/30 backdrop-blur-xl border-border/40 p-6 hover:bg-card/50 transition-all duration-300">
+                                <h3 className="text-lg font-semibold text-white mb-2">LLMs forget context</h3>
+                                <p className="text-sm text-foreground/70 leading-relaxed mb-2">
+                                    Ad‑hoc prompts lead to inconsistency and rework.
+                                </p>
+                                <p className="text-sm text-primary/90">
+                                    Solution: Durable context packs that are shareable and prompt‑ready.
+                                </p>
+                            </Card>
+
+                            <Card className="bg-card/30 backdrop-blur-xl border-border/40 p-6 hover:bg-card/50 transition-all duration-300">
+                                <h3 className="text-lg font-semibold text-white mb-2">Vibe coding misaligns teams</h3>
+                                <p className="text-sm text-foreground/70 leading-relaxed mb-2">
+                                    Requirements, constraints, and acceptance criteria are unclear.
+                                </p>
+                                <p className="text-sm text-primary/90">
+                                    Solution: Structured briefs with user stories and clear acceptance criteria.
+                                </p>
+                            </Card>
+
+                            <Card className="bg-card/30 backdrop-blur-xl border-border/40 p-6 hover:bg-card/50 transition-all duration-300">
+                                <h3 className="text-lg font-semibold text-white mb-2">Decisions lack grounding</h3>
+                                <p className="text-sm text-foreground/70 leading-relaxed mb-2">
+                                    Missing market and competitive signals slow momentum.
+                                </p>
+                                <p className="text-sm text-primary/90">
+                                    Solution: Embedded web research to inform scope and trade‑offs.
+                                </p>
+                            </Card>
+                        </div>
+                    </section>
 
                     {/* Features Section */}
                     <section id="features" className="mb-20">
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-instrument font-bold text-white mb-4">
+                            <h2 className="text-3xl md:text-4xl font-body font-bold text-white mb-4">
                                 Features
                             </h2>
                             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
-                                Everything you need to validate your startup idea and make informed decisions.
+                                Everything you need to replace vibe coding with actionable context that LLMs and developers can execute on.
                             </p>
                         </div>
 
@@ -121,11 +165,11 @@ const AboutUs = () => {
                     {/* How It Works Section */}
                     <section id="how-it-works" className="mb-20">
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-instrument font-bold text-white mb-4">
+                            <h2 className="text-3xl md:text-4xl font-body font-bold text-white mb-4">
                                 How It Works
                             </h2>
                             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
-                                Simple, fast, and effective startup validation in three easy steps.
+                                From rough idea to aligned plan in three steps.
                             </p>
                         </div>
 
@@ -171,7 +215,7 @@ const AboutUs = () => {
                     {/* Contact Section */}
                     <section id="contact" className="mb-20">
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-instrument font-bold text-white mb-4">
+                            <h2 className="text-3xl md:text-4xl font-body font-bold text-white mb-4">
                                 Contact Us
                             </h2>
                             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
@@ -241,19 +285,9 @@ const AboutUs = () => {
                         </div>
 
                         <div className="text-center mt-12">
-                            <Card className="bg-card/20 backdrop-blur-xl border-border/30 p-8 max-w-2xl mx-auto">
-                                <h3 className="text-xl font-semibold text-white mb-4">
-                                    Ready to validate your next big idea?
-                                </h3>
-                                <p className="text-foreground/70 mb-6">
-                                    Join thousands of entrepreneurs who trust Just Plan It! for startup validation.
-                                </p>
-                                <Link to="/">
-                                    <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                                        Get Started Free
-                                    </Button>
-                                </Link>
-                            </Card>
+                            <h1 className="pt-8 text-4xl md:text-5xl text-white">
+                                don't just vibe-code, plan and execute with "Just Plan It!"
+                            </h1>
                         </div>
                     </section>
                 </div>

@@ -8,22 +8,20 @@ interface IdeaPromptSectionProps {
 
 export const IdeaPromptSection = ({ onIdeaSubmit }: IdeaPromptSectionProps) => {
   return (
-    <Card className="bg-card/20 backdrop-blur-md border-border/30 p-8 mb-8">
+    <Card className="bg-card/30 backdrop-blur-xl border-border/30 p-8 mb-8">
       <div className="text-center mb-6">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Lightbulb className="h-8 w-8 text-primary" />
-          <h2 className="text-3xl font-bold text-white">Got a New Idea?</h2>
+        <div className="flex items-center justify-center gap-3 mb-3">
+          <h2 className="text-2xl font-semibold text-white">What in your mind?</h2>
         </div>
-        <p className="text-foreground/70 text-lg max-w-2xl mx-auto">
-          Describe your startup idea and get instant AI-powered validation with market analysis, 
-          competitive insights, and actionable recommendations.
+        <p className="text-foreground/70 text-base max-w-2xl mx-auto">
+          Describe your concept with audience, constraints, and success metrics for a stronger analysis.
         </p>
       </div>
-      
+
       <div className="max-w-4xl mx-auto">
-        <PromptInputBox 
-          onSend={(message) => onIdeaSubmit(message)} 
-          placeholder="Describe your startup idea in detail..." 
+        <PromptInputBox
+          onSend={(message) => onIdeaSubmit(message)}
+          placeholder="What are you building? Who is it for? Any constraints or success metrics?"
         />
       </div>
     </Card>

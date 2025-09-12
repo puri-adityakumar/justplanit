@@ -6,23 +6,23 @@ export const Footer = () => {
       <div className="flex items-center gap-3">
         <span className="text-lg font-lora font-bold italic text-white">Just Plan It!</span>
       </div>
-      
+
       <div className="text-center">
-        <p className="text-white text-sm">Plan smarter, live better</p>
+        <p className="text-white text-sm">Plan smarter, ship faster</p>
       </div>
 
       <div className="flex items-center gap-4">
-        <a 
-          href="https://github.com" 
-          target="_blank" 
+        <a
+          href="https://github.com/puri-adityakumar/justplanit"
+          target="_blank"
           rel="noopener noreferrer"
           className="text-white hover:text-white transition-colors"
         >
           <Github className="h-5 w-5" />
         </a>
-        <a 
-          href="https://x.com" 
-          target="_blank" 
+        <a
+          href="https://x.com/adityawaslost"
+          target="_blank"
           rel="noopener noreferrer"
           className="text-white hover:text-white transition-colors"
         >

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { IdeaService } from '@/services/ideaService';
-import { 
-  IdeaDocument, 
-  CompleteIdea, 
+import {
+  IdeaDocument,
+  CompleteIdea,
   CreateIdeaRequest,
   UpdateIdeaAnalysisRequest,
   CreateSectionRequest,
@@ -12,19 +12,35 @@ import { useAuth } from './use-auth';
 
 export function useIdeas() {
   const { user } = useAuth();
-  const [ideas, setIdeas] = useState<IdeaDocument[]>([]);
+  const [ideas, setIdeas] = useState<CompleteIdea[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Load user's ideas
   const loadUserIdeas = useCallback(async () => {
     if (!user) return;
-    
+
     setLoading(true);
     setError(null);
     try {
       const userIdeas = await IdeaService.listUserIdeas(user.$id);
-      setIdeas(userIdeas);
+      // Convert to CompleteIdea format by fetching analysis for each
+      const completeIdeas = await Promise.all(
+        userIdeas.map(async (idea) => {
+          try {
+            const completeIdea = await IdeaService.getCompleteIdea(idea.$id);
+            return completeIdea;
+          } catch {
+            // If analysis fails, return with empty analysis
+            return {
+              idea,
+              analysis: undefined,
+              sections: {}
+            } as CompleteIdea;
+          }
+        })
+      );
+      setIdeas(completeIdeas);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load ideas');
     } finally {
@@ -43,9 +59,14 @@ export function useIdeas() {
         user_id: user.$id,
         user_name: user.name || user.email || 'Anonymous'
       });
-      
-      // Add to local state
-      setIdeas(prev => [newIdea, ...prev]);
+
+      // Add to local state as CompleteIdea
+      const completeIdea: CompleteIdea = {
+        idea: newIdea,
+        analysis: undefined,
+        sections: {}
+      };
+      setIdeas(prev => [completeIdea, ...prev]);
       return newIdea;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create idea';
@@ -59,10 +80,12 @@ export function useIdeas() {
     setError(null);
     try {
       const updatedIdea = await IdeaService.updateIdea(ideaId, updates);
-      
+
       // Update local state
-      setIdeas(prev => prev.map(idea => 
-        idea.$id === ideaId ? updatedIdea : idea
+      setIdeas(prev => prev.map(completeIdea =>
+        completeIdea.idea.$id === ideaId
+          ? { ...completeIdea, idea: updatedIdea }
+          : completeIdea
       ));
       return updatedIdea;
     } catch (err) {
@@ -77,9 +100,9 @@ export function useIdeas() {
     setError(null);
     try {
       await IdeaService.deleteIdea(ideaId);
-      
+
       // Remove from local state
-      setIdeas(prev => prev.filter(idea => idea.$id !== ideaId));
+      setIdeas(prev => prev.filter(completeIdea => completeIdea.idea.$id !== ideaId));
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete idea';
       setError(errorMessage);
@@ -111,7 +134,7 @@ export function useIdeaBySlug(slug?: string) {
   // Load complete idea by slug
   const loadIdea = useCallback(async () => {
     if (!slug) return;
-    
+
     setLoading(true);
     setError(null);
     try {
@@ -169,7 +192,7 @@ export function useIdeaBySlug(slug?: string) {
         ...request,
         idea_id: idea.idea.$id
       });
-      
+
       // Update local state
       setIdea(prev => prev ? { ...prev, analysis } : null);
       return analysis;
@@ -191,7 +214,7 @@ export function useIdeaBySlug(slug?: string) {
         section_type: sectionType,
         data
       });
-      
+
       // Update local state
       setIdea(prev => prev ? {
         ...prev,
@@ -231,7 +254,7 @@ export function useIdeaDetail(ideaId?: string) {
   // Load complete idea with all sections
   const loadIdea = useCallback(async () => {
     if (!ideaId) return;
-    
+
     setLoading(true);
     setError(null);
     try {
@@ -254,7 +277,7 @@ export function useIdeaDetail(ideaId?: string) {
         ...request,
         idea_id: ideaId
       });
-      
+
       // Update local state
       setIdea(prev => prev ? { ...prev, analysis } : null);
       return analysis;
@@ -276,7 +299,7 @@ export function useIdeaDetail(ideaId?: string) {
         section_type: sectionType,
         data
       });
-      
+
       // Update local state
       setIdea(prev => prev ? {
         ...prev,

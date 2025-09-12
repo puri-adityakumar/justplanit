@@ -31,8 +31,6 @@ export class IdeaService {
     const ideaData = {
       user_id: request.user_id,
       user_name: request.user_name,
-      title: request.title || null,
-      description: request.description || null,
       slug,
       status: 'analyzing' as const,
       is_public: false
@@ -99,6 +97,8 @@ export class IdeaService {
           viability_score: rawAnalysis.viability_score,
           market_size: rawAnalysis.market_size,
           completed_at: rawAnalysis.completed_at,
+          title: rawAnalysis.title,
+          description: rawAnalysis.description,
           created_at: rawAnalysis.$createdAt,
           updated_at: rawAnalysis.$updatedAt
         };
@@ -187,14 +187,18 @@ export class IdeaService {
       [Query.equal('idea_id', request.idea_id)]
     );
 
-    const analysisData = {
-      idea_id: request.idea_id,
-      status: request.status || 'analyzing',
-      viability_score: request.viability_score || null,
-      market_size: request.market_size || null,
-      completed_at: request.completed_at || null
-      // Appwrite automatically manages $createdAt and $updatedAt
+    // Build a partial update object: only include fields that were provided
+    // to avoid unintentionally overwriting existing values with null/defaults.
+    const baseData: Record<string, unknown> = {
+      idea_id: request.idea_id
     };
+
+    if (typeof request.status !== 'undefined') baseData.status = request.status;
+    if (typeof request.viability_score !== 'undefined') baseData.viability_score = request.viability_score;
+    if (typeof request.market_size !== 'undefined') baseData.market_size = request.market_size;
+    if (typeof request.completed_at !== 'undefined') baseData.completed_at = request.completed_at;
+    if (typeof request.title !== 'undefined') baseData.title = request.title;
+    if (typeof request.description !== 'undefined') baseData.description = request.description;
 
     let response: Models.Document;
     if (existingResponse.documents.length > 0) {
@@ -203,15 +207,16 @@ export class IdeaService {
         this.db,
         this.collections.IDEA_ANALYSIS,
         existingResponse.documents[0].$id,
-        analysisData
+        baseData
       );
     } else {
-      // Create new
+      // Create new - for new documents, set default status if not provided
+      if (!baseData.status) baseData.status = 'analyzing';
       response = await databases.createDocument(
         this.db,
         this.collections.IDEA_ANALYSIS,
         ID.unique(),
-        analysisData
+        baseData
       );
     }
 
@@ -239,6 +244,8 @@ export class IdeaService {
       viability_score: rawAnalysis.viability_score,
       market_size: rawAnalysis.market_size,
       completed_at: rawAnalysis.completed_at,
+      title: rawAnalysis.title,
+      description: rawAnalysis.description,
       created_at: rawAnalysis.$createdAt,
       updated_at: rawAnalysis.$updatedAt
     };

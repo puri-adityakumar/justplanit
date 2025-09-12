@@ -10,20 +10,20 @@ export const DashboardQuickActions = ({ totalIdeas }: DashboardQuickActionsProps
   if (totalIdeas === 0) return null;
 
   return (
-    <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6">
+    <Card className="bg-card/30 backdrop-blur-xl border-border/30 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-white mb-1">Ready for more insights?</h3>
-          <p className="text-foreground/60">
-            Explore successful startup patterns or validate another idea
+          <h3 className="text-base font-semibold text-white mb-1">Need more signals?</h3>
+          <p className="text-foreground/60 text-sm">
+            Explore trends or validate another idea
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="border-border/40">
-            View Trends
+          <Button variant="outline" className="border-border/40 text-foreground/80 hover:text-foreground">
+            View trends
           </Button>
-          <Button>
-            Validate New Idea
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            Validate idea
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>

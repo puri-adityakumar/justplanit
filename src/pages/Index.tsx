@@ -9,6 +9,8 @@ const Index = () => {
     // Set dark mode by default
     document.documentElement.classList.add('dark');
     localStorage.setItem('theme', 'dark');
+    // Update page title for SEO
+    document.title = "Just Plan It! — Generate Context Packs for AI‑assisted Development";
   }, []);
 
   const handleSendMessage = (message: string, files?: File[]) => {
@@ -19,7 +21,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-black relative">
-      <GradientBars 
+      <GradientBars
         bars={25}
         colors={[
           '#ef4444',
