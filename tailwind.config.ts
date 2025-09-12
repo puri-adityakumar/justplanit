@@ -19,7 +19,6 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'display': ['Inter', 'system-ui', 'sans-serif'],
 				'body': ['Nunito', 'system-ui', 'sans-serif'],
 				'lora': ['Lora', 'serif'],
 				'instrument': ['Instrument Serif', 'serif'],

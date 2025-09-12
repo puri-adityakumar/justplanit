@@ -53,11 +53,9 @@ All colors MUST be HSL.
     --gradient-end: 320 100% 95%;
 
     /* Accent gradients */
-    --primary-gradient: linear-gradient(
-      135deg,
-      hsl(263 85% 65%),
-      hsl(280 65% 70%)
-    );
+    --primary-gradient: linear-gradient(135deg,
+        hsl(263 85% 65%),
+        hsl(280 65% 70%));
     --card-gradient: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 14% 98%));
 
     --sidebar-background: 0 0% 98%;
@@ -112,16 +110,12 @@ All colors MUST be HSL.
     --gradient-end: 260 20% 18%;
 
     /* Dark accent gradients */
-    --primary-gradient: linear-gradient(
-      135deg,
-      hsl(263 85% 70%),
-      hsl(280 65% 75%)
-    );
-    --card-gradient: linear-gradient(
-      135deg,
-      hsl(225 20% 12%),
-      hsl(225 15% 15%)
-    );
+    --primary-gradient: linear-gradient(135deg,
+        hsl(263 85% 70%),
+        hsl(280 65% 75%));
+    --card-gradient: linear-gradient(135deg,
+        hsl(225 20% 12%),
+        hsl(225 15% 15%));
 
     --sidebar-background: 225 25% 10%;
     --sidebar-foreground: 0 0% 90%;
@@ -143,12 +137,18 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-body;
   }
 
-  h1,
+  h1 {
+    @apply font-instrument;
+  }
+
   h2,
-  h3,
+  h3 {
+    @apply font-body font-bold;
+  }
+
   h4,
   h5,
   h6 {
-    @apply font-display;
+    @apply font-body font-semibold;
   }
 }

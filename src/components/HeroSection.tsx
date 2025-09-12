@@ -33,11 +33,13 @@ export const HeroSection = ({ onSendMessage }: HeroSectionProps) => {
       <div className="text-center mb-16 max-w-4xl">
         <h1 className="text-6xl md:text-8xl font-instrument font-bold text-foreground mb-8 leading-tight">
           <span className="text-white">
-            Validate Your Idea!
+            <span className="line-through text-gray-500 opacity-60">Vibe coding</span>{" "}
+            <br className="md:hidden" />
+            AI-assisted building
           </span>
         </h1>
         <p className="text-xl md:text-2xl text-foreground/60 max-w-3xl mx-auto font-body leading-relaxed">
-          Got a startup idea? Let's validate it! Get expert insights, market analysis, and actionable feedback powered by web research and AI.
+          AI moves fast when it has context. Turn rough ideas into structured context packs—requirements, user stories, risks, and research—so your LLMs, devs, and stakeholders stay perfectly aligned.
         </p>
       </div>
 
@@ -46,7 +48,7 @@ export const HeroSection = ({ onSendMessage }: HeroSectionProps) => {
         <PromptInputBox
           onSend={handleSendMessage}
           isLoading={isLoading}
-          placeholder="Describe your startup idea... (e.g., 'A mobile app that helps people find local food trucks in real-time')"
+          placeholder="What are you building? Who is it for? Any constraints or success metrics?"
         />
       </div>
 

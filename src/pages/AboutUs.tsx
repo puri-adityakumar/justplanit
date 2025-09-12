@@ -88,7 +88,7 @@ const AboutUs = () => {
                     {/* Features Section */}
                     <section id="features" className="mb-20">
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-instrument font-bold text-white mb-4">
+                            <h2 className="text-3xl md:text-4xl font-body font-bold text-white mb-4">
                                 Features
                             </h2>
                             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
@@ -121,7 +121,7 @@ const AboutUs = () => {
                     {/* How It Works Section */}
                     <section id="how-it-works" className="mb-20">
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-instrument font-bold text-white mb-4">
+                            <h2 className="text-3xl md:text-4xl font-body font-bold text-white mb-4">
                                 How It Works
                             </h2>
                             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
@@ -171,7 +171,7 @@ const AboutUs = () => {
                     {/* Contact Section */}
                     <section id="contact" className="mb-20">
                         <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-instrument font-bold text-white mb-4">
+                            <h2 className="text-3xl md:text-4xl font-body font-bold text-white mb-4">
                                 Contact Us
                             </h2>
                             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
