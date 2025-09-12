@@ -6,7 +6,11 @@ import {
   Search,
   Filter,
   LayoutList,
-  LayoutGrid
+  LayoutGrid,
+  ChevronDown,
+  ChevronRight,
+  TrendingUp,
+  DollarSign
 } from "lucide-react";
 import React from "react";
 
@@ -26,6 +30,7 @@ export const IdeasGrid = ({
   setFilterStatus
 }: IdeasGridProps) => {
   const [view, setView] = React.useState<'list' | 'grid'>("list");
+  const [expandedRows, setExpandedRows] = React.useState<Set<string>>(new Set());
 
   const filteredIdeas = ideas.filter(idea => {
     const matchesSearch = (idea.analysis?.title?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
@@ -33,6 +38,23 @@ export const IdeasGrid = ({
     const matchesFilter = filterStatus === 'all' || idea.idea.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
+
+  const toggleRowExpansion = (ideaId: string) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(ideaId)) {
+      newExpanded.delete(ideaId);
+    } else {
+      newExpanded.add(ideaId);
+    }
+    setExpandedRows(newExpanded);
+  };
+
+  const getViabilityColor = (score?: number) => {
+    if (!score) return "text-gray-400";
+    if (score >= 8) return "text-green-400";
+    if (score >= 6) return "text-yellow-400";
+    return "text-red-400";
+  };
 
   return (
     <div className="mb-8">
@@ -87,7 +109,7 @@ export const IdeasGrid = ({
       {/* Ideas */}
       {filteredIdeas.length > 0 ? (
         view === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredIdeas.map((idea) => (
               <IdeaCard key={idea.idea.$id} idea={idea} />
             ))}
@@ -99,9 +121,20 @@ export const IdeasGrid = ({
                 <thead className="bg-black border-b border-border/40">
                   <tr>
                     <th className="text-left p-4 text-sm font-semibold text-white">Title</th>
-                    <th className="text-left p-4 text-sm font-semibold text-white/90 hidden md:table-cell">Description</th>
+                    <th className="text-left p-4 text-sm font-semibold text-white/90 hidden lg:table-cell">
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="h-4 w-4" />
+                        Viability
+                      </div>
+                    </th>
+                    <th className="text-left p-4 text-sm font-semibold text-white/90 hidden lg:table-cell">
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-4 w-4" />
+                        Market Size
+                      </div>
+                    </th>
                     <th className="text-left p-4 text-sm font-semibold text-white/90">Status</th>
-                    <th className="text-left p-4 text-sm font-semibold text-white/90">Date</th>
+                    <th className="text-left p-4 text-sm font-semibold text-white/90 hidden md:table-cell">Date</th>
                     <th className="text-right p-4 text-sm font-semibold text-white/90">Actions</th>
                   </tr>
                 </thead>
@@ -120,37 +153,83 @@ export const IdeasGrid = ({
                       }
                     };
 
+                    const isExpanded = expandedRows.has(idea.idea.$id);
+
                     return (
-                      <tr key={idea.idea.$id} className="border-b border-border/30 hover:bg-card/40 transition-colors">
-                        <td className="p-4">
-                          <div className="font-medium text-white truncate max-w-[200px]">
-                            {idea.analysis?.title || 'Untitled Idea'}
-                          </div>
-                        </td>
-                        <td className="p-4 hidden md:table-cell">
-                          <div className="text-sm text-foreground/70 line-clamp-2 max-w-[300px]">
-                            {idea.analysis?.description || 'No description provided'}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          {getStatusBadge()}
-                        </td>
-                        <td className="p-4">
-                          <div className="text-sm text-foreground/60">
-                            {new Date(idea.idea.$createdAt).toLocaleDateString()}
-                          </div>
-                        </td>
-                        <td className="p-4 text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-border/40"
-                            onClick={() => window.location.href = `/dashboard/${idea.idea.slug}`}
-                          >
-                            View
-                          </Button>
-                        </td>
-                      </tr>
+                      <React.Fragment key={idea.idea.$id}>
+                        <tr className="border-b border-border/30 hover:bg-card/40 transition-colors">
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => toggleRowExpansion(idea.idea.$id)}
+                                className="text-foreground/60 hover:text-foreground transition-colors"
+                              >
+                                {isExpanded ?
+                                  <ChevronDown className="h-4 w-4" /> :
+                                  <ChevronRight className="h-4 w-4" />
+                                }
+                              </button>
+                              <div className="font-medium text-white truncate max-w-[250px]">
+                                {idea.analysis?.title || 'Untitled Idea'}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4 hidden lg:table-cell">
+                            <div className={`text-sm font-semibold ${getViabilityColor(idea.analysis?.viability_score)}`}>
+                              {idea.analysis?.viability_score ? `${idea.analysis.viability_score}/10` : 'N/A'}
+                            </div>
+                          </td>
+                          <td className="p-4 hidden lg:table-cell">
+                            <div className="text-sm text-foreground/70 max-w-[200px] truncate">
+                              {idea.analysis?.market_size || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            {getStatusBadge()}
+                          </td>
+                          <td className="p-4 hidden md:table-cell">
+                            <div className="text-sm text-foreground/60">
+                              {new Date(idea.idea.$createdAt).toLocaleDateString()}
+                            </div>
+                          </td>
+                          <td className="p-4 text-right">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-border/40"
+                              onClick={() => window.location.href = `/dashboard/${idea.idea.slug}`}
+                            >
+                              View
+                            </Button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="border-b border-border/30 bg-card/20">
+                            <td colSpan={6} className="p-4">
+                              <div className="ml-6 text-sm text-foreground/70 leading-relaxed">
+                                <strong className="text-foreground/90">Description:</strong>
+                                <p className="mt-1">{idea.analysis?.description || 'No description provided'}</p>
+
+                                {/* Show mobile-only data */}
+                                <div className="lg:hidden mt-3 flex gap-4">
+                                  <div>
+                                    <strong className="text-foreground/90">Viability:</strong>
+                                    <span className={`ml-2 font-semibold ${getViabilityColor(idea.analysis?.viability_score)}`}>
+                                      {idea.analysis?.viability_score ? `${idea.analysis.viability_score}/10` : 'N/A'}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <strong className="text-foreground/90">Market:</strong>
+                                    <span className="ml-2 text-foreground/70">
+                                      {idea.analysis?.market_size || 'N/A'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>

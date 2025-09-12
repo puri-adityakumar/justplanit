@@ -57,102 +57,129 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
   };
 
   return (
-    <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6 hover:bg-card/30 transition-all duration-200 group">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-2 min-w-0">
-          {getStatusIcon()}
-          <h3 className="text-lg font-semibold text-white truncate max-w-[18rem] sm:max-w-[22rem]">
-            {idea.analysis?.title || 'Untitled Idea'}
-          </h3>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {idea.idea.is_public && (
-            <Eye className="h-4 w-4 text-foreground/40" />
-          )}
-          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <p className="text-foreground/70 text-sm mb-4 line-clamp-2 leading-relaxed break-words">
-        {idea.analysis?.description || 'No description provided'}
-      </p>
-
-      <div className="flex items-center justify-between mb-4">
-        {getStatusBadge()}
-        <span className="text-xs text-foreground/50">
-          {formatDate(idea.idea.$createdAt)}
-        </span>
-      </div>
-
-      {idea.idea.status === 'completed' && (
-        <div className="grid grid-cols-2 gap-4 mb-4 py-3 border-t border-border/20">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            <div>
-              <div className="text-xs text-foreground/60">Viability</div>
-              <div className={`text-sm font-semibold ${getViabilityColor(idea.analysis?.viability_score)}`}>
-                {idea.analysis?.viability_score ? `${idea.analysis.viability_score}/10` : 'Analysis needed'}
-              </div>
+    <Card className="bg-card/30 backdrop-blur-xl border-border/40 overflow-hidden hover:bg-card/40 hover:border-border/60 transition-all duration-300 group shadow-lg hover:shadow-xl">
+      {/* Header Section */}
+      <div className="p-6 pb-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex-shrink-0">
+              {getStatusIcon()}
             </div>
+            <h3 className="text-lg font-bold text-white line-clamp-2 leading-tight">
+              {idea.analysis?.title || 'Untitled Idea'}
+            </h3>
           </div>
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-primary" />
-            <div>
-              <div className="text-xs text-foreground/60">Market Size</div>
-              <div className="text-sm font-semibold text-foreground/60">
-                {idea.analysis?.market_size || 'Analysis needed'}
+          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+            {idea.idea.is_public && (
+              <Eye className="h-4 w-4 text-foreground/40" />
+            )}
+            <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <p className="text-foreground/70 text-sm line-clamp-3 leading-relaxed mb-4">
+          {idea.analysis?.description || 'No description provided'}
+        </p>
+
+        <div className="flex items-center justify-between">
+          {getStatusBadge()}
+          <span className="text-xs text-foreground/50 font-medium">
+            {formatDate(idea.idea.$createdAt)}
+          </span>
+        </div>
+      </div>
+
+      {/* Metrics Section - Only for completed ideas */}
+      {idea.idea.status === 'completed' && (
+        <div className="px-6 pb-4">
+          <div className="bg-black/20 rounded-lg p-4 border border-border/20">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-foreground/60 font-medium">Viability</span>
+                </div>
+                <div className={`text-lg font-bold ${getViabilityColor(idea.analysis?.viability_score)}`}>
+                  {idea.analysis?.viability_score ? `${idea.analysis.viability_score}/10` : 'N/A'}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  <span className="text-xs text-foreground/60 font-medium">Market</span>
+                </div>
+                <div className="text-sm font-semibold text-foreground/80 truncate">
+                  {idea.analysis?.market_size ?
+                    idea.analysis.market_size.split(' ')[0] || 'N/A' :
+                    'N/A'
+                  }
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* Status Section - For analyzing/failed states */}
       {idea.idea.status === 'analyzing' && (
-        <div className="py-3 border-t border-border/20 mb-4">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-blue-500" />
-            <span className="text-sm text-foreground/70">Analysis in progress...</span>
+        <div className="px-6 pb-4">
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-blue-400" />
+              <div>
+                <div className="text-sm font-medium text-blue-400">Analysis in Progress</div>
+                <div className="text-xs text-foreground/60">This may take a few moments</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {idea.idea.status === 'failed' && (
-        <div className="py-3 border-t border-border/20 mb-4">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            <span className="text-sm text-foreground/70">Analysis failed</span>
+        <div className="px-6 pb-4">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-400" />
+              <div>
+                <div className="text-sm font-medium text-red-400">Analysis Failed</div>
+                <div className="text-xs text-foreground/60">Please try again</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="flex gap-2">
-        {idea.idea.status === 'completed' && (
-          <Link to={`/dashboard/${idea.idea.slug}`} className="flex-1 min-w-0">
-            <Button className="w-full bg-primary hover:bg-primary/90 truncate">
-              View Analysis
-            </Button>
-          </Link>
-        )}
+      {/* Action Section */}
+      <div className="px-6 pb-6">
+        <div className="flex gap-2">
+          {idea.idea.status === 'completed' && (
+            <Link to={`/dashboard/${idea.idea.slug}`} className="flex-1">
+              <Button className="w-full bg-primary hover:bg-primary/90 font-medium">
+                View Analysis
+              </Button>
+            </Link>
+          )}
 
-        {idea.idea.status === 'analyzing' && (
-          <Link to={`/dashboard/${idea.idea.slug}`} className="flex-1 min-w-0">
-            <Button variant="outline" className="w-full border-border/40 truncate">
-              View Progress
-            </Button>
-          </Link>
-        )}
+          {idea.idea.status === 'analyzing' && (
+            <Link to={`/dashboard/${idea.idea.slug}`} className="flex-1">
+              <Button variant="outline" className="w-full border-border/40 hover:bg-card/40 font-medium">
+                View Progress
+              </Button>
+            </Link>
+          )}
 
-        {idea.idea.status === 'failed' && (
-          <Button variant="outline" className="flex-1 border-border/40 truncate">
-            Retry Analysis
+          {idea.idea.status === 'failed' && (
+            <Button variant="outline" className="flex-1 border-border/40 hover:bg-card/40 font-medium">
+              Retry Analysis
+            </Button>
+          )}
+
+          <Button variant="ghost" size="sm" className="px-3 flex-shrink-0 hover:bg-card/40">
+            <MoreHorizontal className="h-4 w-4" />
           </Button>
-        )}
-
-        <Button variant="ghost" size="sm" className="px-3 flex-shrink-0">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        </div>
       </div>
     </Card>
   );
