@@ -25,42 +25,42 @@ const AboutUs = () => {
 
     const features = [
         {
-            icon: Search,
-            title: "Web Research",
-            description: "Comprehensive market analysis using real-time web data"
-        },
-        {
             icon: Brain,
-            title: "Expert AI Insights",
-            description: "Advanced AI provides professional-grade business analysis"
-        },
-        {
-            icon: BarChart3,
-            title: "Market Validation",
-            description: "Data-driven validation with actionable recommendations"
+            title: "Context Packs",
+            description: "Structured briefs with problem, goals, scope, personas, user stories, constraints, risks, and next steps."
         },
         {
             icon: Target,
-            title: "Action Planning",
-            description: "Get clear next steps to move your idea forward"
+            title: "Stakeholder Alignment",
+            description: "Clear, role‑focused views for developers and product leads so handoffs are crisp and complete."
+        },
+        {
+            icon: Search,
+            title: "Grounded Research",
+            description: "Relevant market and competitive signals embedded into the brief to inform decisions."
+        },
+        {
+            icon: BarChart3,
+            title: "Prompt & Handoff",
+            description: "Export prompt‑ready packets and ticket‑friendly breakdowns for fast execution."
         }
     ];
 
     const howItWorksSteps = [
         {
             step: "01",
-            title: "Share Your Idea",
-            description: "Type or speak your startup concept using our intuitive interface"
+            title: "Describe Your Idea",
+            description: "Add audience, constraints, and success metrics to set strong context."
         },
         {
             step: "02",
-            title: "AI Analysis",
-            description: "Our system conducts market research and competitive analysis"
+            title: "Generate the Context",
+            description: "Our agents assemble a structured context pack and stitch in web research."
         },
         {
             step: "03",
-            title: "Get Results",
-            description: "Receive comprehensive validation report with actionable insights"
+            title: "Align and Build",
+            description: "Share with your team, export to prompts or tickets, and start building with confidence."
         }
     ];
 
@@ -81,7 +81,7 @@ const AboutUs = () => {
                             About Just Plan It!
                         </h1>
                         <p className="text-xl md:text-2xl text-foreground/60 max-w-3xl mx-auto leading-relaxed">
-                            Empowering entrepreneurs with AI-driven startup validation and market insights.
+                            Vibe coding wastes time and context. LLMs forget, teams misalign. Just Plan It generates durable, structured context for LLMs and developers so you move from idea to plan with clarity and speed.
                         </p>
                     </div>
 
@@ -92,7 +92,7 @@ const AboutUs = () => {
                                 Features
                             </h2>
                             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
-                                Everything you need to validate your startup idea and make informed decisions.
+                                Everything you need to replace vibe coding with actionable context that LLMs and developers can execute on.
                             </p>
                         </div>
 
@@ -125,7 +125,7 @@ const AboutUs = () => {
                                 How It Works
                             </h2>
                             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
-                                Simple, fast, and effective startup validation in three easy steps.
+                                From rough idea to aligned plan in three steps.
                             </p>
                         </div>
 

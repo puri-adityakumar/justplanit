@@ -89,7 +89,7 @@ export const HeroSection = ({ onSendMessage }: HeroSectionProps) => {
           </AnimatePresence>
         </h1>
         <p className="text-xl md:text-2xl text-foreground/60 max-w-3xl mx-auto font-body leading-relaxed">
-          AI moves fast when it has context. Turn rough ideas into structured context packs—requirements, user stories, risks, and research—so your LLMs, devs, and stakeholders stay perfectly aligned.
+          Don't just dive into coding. Let our agentic AI plan and validate your idea, generating structured context packs with requirements, user stories, risks, and research to keep your team perfectly aligned.
         </p>
       </div>
 
