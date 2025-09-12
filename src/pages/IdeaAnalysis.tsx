@@ -162,7 +162,12 @@ const IdeaAnalysis = () => {
     setPrdError(null);
 
     try {
-      const response = await openRouterService.generatePRD({ idea: ideaData.idea.description || '' });
+      // Use the user's original idea text for PRD generation
+      const ideaText = ideaData.sections?.overview ?
+        (ideaData.sections.overview as any).overview?.idea_summary || '' :
+        idea || '';
+
+      const response = await openRouterService.generatePRD({ idea: ideaText });
 
       if (response.success && response.data) {
         await updateSection('prd', response.data as unknown as Record<string, unknown>);
@@ -184,8 +189,13 @@ const IdeaAnalysis = () => {
     setIsQuestionnaireOpen(false); // Close modal
 
     try {
+      // Use the user's original idea text for tech stack generation
+      const ideaText = ideaData.sections?.overview ?
+        (ideaData.sections.overview as any).overview?.idea_summary || '' :
+        idea || '';
+
       const response = await openRouterService.generateTechStack({
-        idea: ideaData.idea.description || '',
+        idea: ideaText,
         userChoices: answers,
       });
 
@@ -208,8 +218,13 @@ const IdeaAnalysis = () => {
     setMarketError(null);
 
     try {
+      // Use the user's original idea text for market analysis generation
+      const ideaText = ideaData.sections?.overview ?
+        (ideaData.sections.overview as any).overview?.idea_summary || '' :
+        idea || '';
+
       const response = await openRouterService.generateMarketAnalysis({
-        idea: ideaData.idea.description || ''
+        idea: ideaText
       });
 
       if (response.success && response.data) {
@@ -268,9 +283,9 @@ const IdeaAnalysis = () => {
   }, [slug]);
 
   useEffect(() => {
-    if (ideaData?.idea.title) {
-      document.title = `${ideaData.idea.title} • Just Plan It!`;
-    }
+    // Use the analysis title if available, otherwise use a default
+    const title = ideaData?.analysis?.title || 'Idea Analysis';
+    document.title = `${title} • Just Plan It!`;
   }, [ideaData]);
 
   // Show loading state while fetching idea data
@@ -301,10 +316,14 @@ const IdeaAnalysis = () => {
     );
   }
 
-  if (loading || ideaData?.analysis?.status === 'analyzing') {
+  // Show loading only if we're actually analyzing or don't have overview data yet
+  const hasOverviewData = ideaData?.sections?.overview;
+  const isCurrentlyAnalyzing = isAnalyzing || (ideaData?.analysis?.status === 'analyzing' && !hasOverviewData);
+
+  if (loading || isCurrentlyAnalyzing) {
     return (
       <AnalysisLoading
-        ideaDescription={ideaData?.idea.description || idea || ''}
+        ideaDescription={ideaData?.analysis?.description || idea || ''}
         currentStep={currentStep}
         progress={(currentStep / analysisSteps.length) * 100}
         analysisSteps={analysisSteps}
@@ -316,15 +335,48 @@ const IdeaAnalysis = () => {
     return (
       <AnalysisError
         error={error || 'Analysis failed. Please try again.'}
-        onRetry={() => ideaData && analyzeIdea(ideaData.idea.description || '')}
+        onRetry={() => ideaData && analyzeIdea(ideaData.analysis?.description || idea || '')}
       />
     );
   }
 
   // Get validation data from the overview section instead of analysis.result
   const validationData = ideaData?.sections?.overview as unknown as ValidationResult | undefined;
-  if (!validationData || !ideaData) {
+  if (!ideaData) {
     return null;
+  }
+
+  // If we don't have validation data but the idea exists, show a message to run analysis
+  if (!validationData) {
+    return (
+      <div className="min-h-screen bg-black relative">
+        <GradientBars bars={25} colors={['#ef4444', 'transparent']} />
+        <Navigation />
+        <div className="relative z-10 px-6 py-8">
+          <div className="max-w-7xl mx-auto">
+            <AnalysisHeader
+              title={ideaData.analysis?.title || 'Untitled Idea'}
+              description={ideaData.analysis?.description || ''}
+            />
+
+            <Card className="bg-black/40 backdrop-blur-xl border-border/30 p-8 text-center mt-8">
+              <Brain className="h-12 w-12 text-primary mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">Analysis Not Available</h3>
+              <p className="text-foreground/70 mb-4">
+                This idea hasn't been analyzed yet. Click the button below to start the analysis.
+              </p>
+              <Button
+                onClick={() => ideaData && analyzeIdea(ideaData.analysis?.description || idea || '')}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Start Analysis
+              </Button>
+            </Card>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   // Prefer saved market section data if available
@@ -340,8 +392,8 @@ const IdeaAnalysis = () => {
           <AnalysisHeader
             quickStats={isOverviewResult(validationData) ? validationData.quick_stats : undefined}
             ideaId={ideaData.idea.$id}
-            title={ideaData.idea.title || 'Untitled Idea'}
-            description={ideaData.idea.description || ''}
+            title={ideaData.analysis?.title || 'Untitled Idea'}
+            description={ideaData.analysis?.description || ''}
           />
 
           <AnalysisQuickStats
