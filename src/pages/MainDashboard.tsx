@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { IdeaPromptSection } from "@/components/dashboard/IdeaPromptSection";
 import { IdeasGrid } from "@/components/dashboard/IdeasGrid";
-import { DashboardQuickActions } from "@/components/dashboard/DashboardQuickActions";
 import { AnalysisLoading } from "@/components/analysis/AnalysisLoading";
 import { useAuth } from "@/hooks/use-auth";
 import { useIdeas } from "@/hooks/use-ideas";
@@ -27,23 +26,23 @@ const MainDashboard = () => {
 
   const handleIdeaSubmit = useCallback(async (idea: string) => {
     if (!user) return;
-    
+
     setIsAnalyzing(true);
     setAnalysisError(null);
-    
+
     try {
       // Create idea in database and redirect immediately - much faster UX
       const newIdea = await createIdea({
-        title: idea.substring(0, 100), 
+        title: idea.substring(0, 100),
         description: idea
       });
 
       // Redirect immediately to analysis page - user sees progress instead of waiting
-      navigate(`/dashboard/${newIdea.slug}`, { 
-        state: { 
+      navigate(`/dashboard/${newIdea.slug}`, {
+        state: {
           pendingAnalysis: true,
-          ideaText: idea 
-        } 
+          ideaText: idea
+        }
       });
 
     } catch (err) {
@@ -119,10 +118,10 @@ const MainDashboard = () => {
                   Your Ideas Dashboard
                 </h1>
                 <p className="text-xl text-foreground/80">
-                  Welcome back, {user?.name || 'Explorer'}! Ready to validate your next big idea?
+                  Welcome back, {user?.name || 'Explorer'}! Ready to plan your next big idea?
                 </p>
               </div>
-              
+
               <div className="hidden md:flex items-center gap-4">
                 <Badge variant="secondary" className="bg-primary/20 text-primary text-sm px-3 py-1">
                   {ideas.length} {ideas.length === 1 ? 'idea' : 'ideas'} analyzed
@@ -131,7 +130,7 @@ const MainDashboard = () => {
             </div>
 
             {/* Quick Stats */}
-            <DashboardStats 
+            <DashboardStats
               completed={stats.completed}
               analyzing={stats.analyzing}
               avgViability={stats.avgViability}
@@ -143,7 +142,7 @@ const MainDashboard = () => {
           <IdeaPromptSection onIdeaSubmit={handleIdeaSubmit} />
 
           {/* Ideas Section */}
-          <IdeasGrid 
+          <IdeasGrid
             ideas={ideas}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -151,8 +150,7 @@ const MainDashboard = () => {
             setFilterStatus={setFilterStatus}
           />
 
-          {/* Quick Actions */}
-          <DashboardQuickActions totalIdeas={ideas.length} />
+
         </div>
       </div>
 

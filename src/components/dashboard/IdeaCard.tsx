@@ -1,11 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Brain, 
-  TrendingUp, 
-  AlertTriangle, 
-  Clock, 
+import {
+  Brain,
+  TrendingUp,
+  AlertTriangle,
+  Clock,
   DollarSign,
   Eye,
   MoreHorizontal,
@@ -59,11 +59,13 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
   return (
     <Card className="bg-card/20 backdrop-blur-md border-border/30 p-6 hover:bg-card/30 transition-all duration-200 group">
       <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           {getStatusIcon()}
-          <h3 className="text-lg font-semibold text-white truncate">{idea.title || 'Untitled Idea'}</h3>
+          <h3 className="text-lg font-semibold text-white truncate max-w-[18rem] sm:max-w-[22rem]">
+            {idea.title || 'Untitled Idea'}
+          </h3>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {idea.is_public && (
             <Eye className="h-4 w-4 text-foreground/40" />
           )}
@@ -73,7 +75,7 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
         </div>
       </div>
 
-      <p className="text-foreground/70 text-sm mb-4 line-clamp-2 leading-relaxed">
+      <p className="text-foreground/70 text-sm mb-4 line-clamp-2 leading-relaxed break-words">
         {idea.description || 'No description provided'}
       </p>
 
@@ -127,28 +129,28 @@ export const IdeaCard = ({ idea }: IdeaCardProps) => {
 
       <div className="flex gap-2">
         {idea.status === 'completed' && (
-          <Link to={`/dashboard/${idea.slug}`} className="flex-1">
-            <Button className="w-full bg-primary hover:bg-primary/90">
+          <Link to={`/dashboard/${idea.slug}`} className="flex-1 min-w-0">
+            <Button className="w-full bg-primary hover:bg-primary/90 truncate">
               View Analysis
             </Button>
           </Link>
         )}
-        
+
         {idea.status === 'analyzing' && (
-          <Link to={`/dashboard/${idea.slug}`} className="flex-1">
-            <Button variant="outline" className="w-full border-border/40">
+          <Link to={`/dashboard/${idea.slug}`} className="flex-1 min-w-0">
+            <Button variant="outline" className="w-full border-border/40 truncate">
               View Progress
             </Button>
           </Link>
         )}
-        
+
         {idea.status === 'failed' && (
-          <Button variant="outline" className="flex-1 border-border/40">
+          <Button variant="outline" className="flex-1 border-border/40 truncate">
             Retry Analysis
           </Button>
         )}
 
-        <Button variant="ghost" size="sm" className="px-3">
+        <Button variant="ghost" size="sm" className="px-3 flex-shrink-0">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </div>
